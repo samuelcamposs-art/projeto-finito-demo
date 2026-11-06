@@ -5,24 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Projeto Finito: entrar</title>
   <style>
-    body { margin: 0; font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
-    .banner { background: #b00020; color: #fff; text-align: center; padding: 12px; font-weight: 700; letter-spacing: .04em; }
-    main { max-width: 380px; margin: 48px auto; padding: 0 20px; }
-    h1 { font-size: 1.5rem; margin-bottom: 24px; }
-    form { background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-    label { display: block; font-size: .9rem; margin-bottom: 14px; }
-    input { display: block; width: 100%; box-sizing: border-box; margin-top: 6px; padding: 10px; border: 1px solid #bbb; border-radius: 4px; font-size: 1rem; }
-    button { width: 100%; padding: 10px; border: 0; border-radius: 4px; background: #1a4d7a; color: #fff; font-size: 1rem; cursor: pointer; margin-top: 4px; }
-    button.secundario { background: transparent; color: #1a4d7a; text-decoration: underline; margin-top: 12px; }
-    .msg { min-height: 1.2em; font-size: .9rem; margin-top: 12px; color: #b00020; }
-    .info { background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+    :root {
+      --verde: #6EA67F;
+      --roxo: #9484B3;
+      --azul-claro: #BEDBE9;
+      --cinza-claro: #EAE6E3;
+      --texto: #3B3A40;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--cinza-claro); color: var(--texto);
+    }
+    .banner {
+      background: var(--roxo); color: #fff; text-align: center;
+      padding: 10px; font-weight: 700; letter-spacing: .04em; font-size: .9rem;
+    }
+    header { text-align: center; padding: 28px 16px 8px; }
+    header img { width: 220px; max-width: 70%; height: auto; }
+    main { max-width: 380px; margin: 8px auto 48px; padding: 0 20px; }
+    form, .info {
+      background: #fff; padding: 24px; border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(59,58,64,.08); border-top: 4px solid var(--azul-claro);
+    }
+    label { display: block; font-size: .9rem; margin-bottom: 14px; color: var(--texto); }
+    input {
+      display: block; width: 100%; margin-top: 6px; padding: 10px;
+      border: 1px solid #cfc9c5; border-radius: 6px; font-size: 1rem; background: #fff;
+    }
+    input:focus { outline: 2px solid var(--verde); border-color: var(--verde); }
+    button {
+      width: 100%; padding: 11px; border: 0; border-radius: 6px;
+      background: var(--verde); color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 4px;
+    }
+    button:hover { filter: brightness(.95); }
+    button.secundario {
+      background: transparent; color: var(--roxo); font-weight: 500;
+      text-decoration: underline; margin-top: 12px;
+    }
+    .msg { min-height: 1.2em; font-size: .9rem; margin-top: 14px; color: var(--texto); text-align: center; }
+    .info p { margin: 8px 0; }
+    .perfil { color: var(--roxo); font-weight: 600; }
   </style>
 </head>
 <body>
   <div class="banner">DEMONSTRAÇÃO: dados fictícios</div>
-  <main>
-    <h1>Projeto Finito</h1>
 
+  <header>
+    <img src="logo.png" alt="Projeto Finito">
+  </header>
+
+  <main>
     <!-- Entrar -->
     <form id="form-login" hidden>
       <label>E-mail
@@ -47,7 +81,7 @@
     <!-- Sessão ativa -->
     <section id="sessao" class="info" hidden>
       <p>Olá, <strong id="nome"></strong></p>
-      <p>Perfil: <span id="papel"></span></p>
+      <p>Perfil: <span class="perfil" id="papel"></span></p>
       <p>Painel em construção.</p>
       <button type="button" class="secundario" id="sair">Sair</button>
     </section>
