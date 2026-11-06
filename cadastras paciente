@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projeto Finito: cadastrar paciente</title>
+  <style>
+    :root { --verde:#6EA67F; --roxo:#9484B3; --azul:#BEDBE9; --cinza:#EAE6E3; --texto:#3B3A40; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--cinza); color:var(--texto); }
+    .banner { background:var(--roxo); color:#fff; text-align:center; padding:8px; font-weight:700; font-size:.85rem; letter-spacing:.04em; }
+    header.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 24px; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); flex-wrap:wrap; }
+    header.topo img { height:56px; }
+    .direita { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:flex-end; }
+    .usuario { text-align:right; font-size:.9rem; }
+    .usuario strong { color:var(--roxo); }
+    .linkbtn { color:var(--roxo); text-decoration:underline; font-weight:500; font-size:.9rem; }
+    main { max-width:640px; margin:24px auto; padding:0 16px 40px; }
+    h1 { font-size:1.4rem; color:var(--roxo); }
+    form { background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.08); border-top:4px solid var(--azul); }
+    fieldset { border:1px solid #e3ddd9; border-radius:8px; padding:14px; margin:0 0 18px; }
+    legend { color:var(--roxo); font-weight:600; padding:0 6px; }
+    label.campo { display:block; font-size:.9rem; margin-bottom:12px; }
+    input, select, textarea { display:block; width:100%; margin-top:5px; padding:9px; border:1px solid #cfc9c5; border-radius:6px; font-size:.95rem; background:#fff; font-family:inherit; }
+    select[multiple] { height:auto; }
+    .presta { display:block; font-weight:normal; margin:6px 0; font-size:.95rem; }
+    button.btn { width:100%; padding:11px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
+    .msg { min-height:1.2em; font-size:.9rem; margin-top:12px; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="banner">DEMONSTRAÇÃO: dados fictícios</div>
+
+  <header class="topo">
+    <img src="logo.png" alt="Projeto Finito">
+    <div class="direita">
+      <a class="linkbtn" href="dashboard.html">Voltar ao painel</a>
+      <div class="usuario">
+        <div>Olá, <strong id="nome"></strong></div>
+        <div>Master</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <h1>Cadastrar paciente</h1>
+
+    <form id="form">
+      <fieldset>
+        <legend>Identificação</legend>
+        <label class="campo">Nome completo *
+          <input id="nome-pac" required>
+        </label>
+        <label class="campo">Sexo *
+          <select id="sexo" required>
+            <option value="">Selecione</option>
+            <option value="feminino">Feminino</option>
+            <option value="masculino">Masculino</option>
+            <option value="nao_informado">Não informado</option>
+          </select>
+        </label>
+        <label class="campo">Data de nascimento
+          <input type="date" id="nasc">
+        </label>
+        <label class="campo">Bairro * (zona rural entra como bairro)
+          <input id="bairro" required>
+        </label>
+        <label class="campo">Endereço
+          <input id="endereco">
+        </label>
+        <label class="campo">ESF *
+          <input id="esf" required>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Clínico</legend>
+        <label class="campo">Comorbidade principal *
+          <select id="com-principal" required></select>
+        </label>
+        <label class="campo">Comorbidades adicionais (Ctrl/Cmd para selecionar mais de uma)
+          <select id="com-extra" multiple size="6"></select>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Contato principal</legend>
+        <label class="campo">Nome *
+          <input id="cont-nome" required>
+        </label>
+        <label class="campo">Parentesco
+          <input id="cont-par">
+        </label>
+        <label class="campo">Telefone *
+          <input id="cont-tel" required>
+        </label>
+        <label class="campo">Contatos adicionais
+          <textarea id="cont-add" rows="2"></textarea>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Acompanhamento</legend>
+        <label class="campo">Observação
+          <textarea id="obs" rows="2"></textarea>
+        </label>
+        <p style="font-size:.9rem;margin:0 0 4px"><strong>Prestadores designados *</strong></p>
+        <div id="prestadores"></div>
+      </fieldset>
+
+      <button class="btn" type="submit">Salvar paciente</button>
+      <p class="msg" id="msg" role="alert"></p>
+    </form>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    // Chave pública (publishable). O RLS do banco permite cadastro apenas ao master da cidade.
+    const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    let eu = null;
+
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { location.href = 'index.html'; return; }
+      const { data: u } = await sb.from('usuarios').select('id,nome,papel,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
+      if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
+      if (u.papel !== 'master') { location.href = 'dashboard.html'; return; }
+      eu = u;
+      $('nome').textContent = eu.nome;
+
+      const [com, pres] = await Promise.all([
+        sb.from('comorbidades').select('id,nome').order('nome'),
+        sb.from('usuarios').select('id,nome,area').eq('papel', 'prestador').eq('ativo', true).order('nome'),
+      ]);
+      const opcoes = (com.data || []).map((c) => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+      $('com-principal').innerHTML = '<option value="">Selecione</option>' + opcoes;
+      $('com-extra').innerHTML = opcoes;
+      $('prestadores').innerHTML = (pres.data || []).map((p) =>
+        `<label class="presta"><input type="checkbox" class="presta-chk" value="${p.id}" style="display:inline;width:auto;margin-right:6px"> ${esc(p.nome)} (${esc(p.area)})</label>`).join('');
+    })();
+
+    $('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const m = $('msg');
+      const prest = [...document.querySelectorAll('.presta-chk:checked')].map((c) => c.value);
+      if (!prest.length) { m.textContent = 'Designe pelo menos um prestador.'; return; }
+      const principal = $('com-principal').value;
+      if (!principal) { m.textContent = 'Escolha a comorbidade principal.'; return; }
+      const extras = [...$('com-extra').selectedOptions].map((o) => o.value).filter((v) => v !== principal);
+
+      m.textContent = 'Salvando...';
+      const { data: ult } = await sb.from('pacientes').select('numero').order('numero', { ascending: false }).limit(1);
+      const numero = (ult && ult[0] ? ult[0].numero : 0) + 1;
+
+      const { data: pac, error: e1 } = await sb.from('pacientes').insert({
+        cidade_id: eu.cidade_id, numero,
+        nome: $('nome-pac').value.trim(), sexo: $('sexo').value,
+        bairro: $('bairro').value.trim(), esf: $('esf').value.trim(),
+      }).select('id').single();
+      if (e1) { m.textContent = 'Erro ao salvar paciente: ' + e1.message; return; }
+
+      const { error: e2 } = await sb.from('pacientes_sensiveis').insert({
+        paciente_id: pac.id, cidade_id: eu.cidade_id,
+        data_nascimento: $('nasc').value || null,
+        endereco: $('endereco').value.trim() || null,
+        contato_principal_nome: $('cont-nome').value.trim(),
+        contato_principal_parentesco: $('cont-par').value.trim() || null,
+        contato_principal_telefone: $('cont-tel').value.trim(),
+        contatos_adicionais: $('cont-add').value.trim() ? [{ texto: $('cont-add').value.trim() }] : [],
+        observacao: $('obs').value.trim() || null,
+      });
+      if (e2) { m.textContent = 'Paciente criado, mas os dados pessoais falharam: ' + e2.message; return; }
+
+      const comRows = [{ cidade_id: eu.cidade_id, paciente_id: pac.id, comorbidade_id: principal, principal: true },
+        ...extras.map((id) => ({ cidade_id: eu.cidade_id, paciente_id: pac.id, comorbidade_id: id, principal: false }))];
+      const { error: e3 } = await sb.from('paciente_comorbidades').insert(comRows);
+      if (e3) { m.textContent = 'Paciente criado, mas as comorbidades falharam: ' + e3.message; return; }
+
+      const { error: e4 } = await sb.from('designacoes').insert(
+        prest.map((uid) => ({ cidade_id: eu.cidade_id, paciente_id: pac.id, usuario_id: uid })));
+      if (e4) { m.textContent = 'Paciente criado, mas a designação falhou: ' + e4.message; return; }
+
+      m.textContent = `Paciente cadastrado (nº ${numero}).`;
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>
