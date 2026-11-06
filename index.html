@@ -116,9 +116,7 @@
         $('msg').textContent = 'Conta sem perfil ativo. Fale com a coordenação.';
         return;
       }
-      $('nome').textContent = data.nome;
-      $('papel').textContent = PAPEIS[data.papel] || data.papel;
-      mostrar('sessao');
+      window.location.href = 'dashboard.html';
     }
 
     // Link de recuperação: o Supabase abre a página já autenticada em modo de recuperação
