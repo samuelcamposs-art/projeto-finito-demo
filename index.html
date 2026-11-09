@@ -97,7 +97,7 @@
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const $ = (id) => document.getElementById(id);
-    const PAPEIS = { master: 'Master', prestador: 'Profissional' };
+    const PAPEIS = { master: 'Master', prestador: 'Profissional', esf: 'ESF' };
 
     function mostrar(tela) {
       ['form-login', 'form-nova-senha', 'sessao'].forEach((id) => { $(id).hidden = id !== tela; });
@@ -116,7 +116,9 @@
         $('msg').textContent = 'Conta sem perfil ativo. Fale com a coordenação.';
         return;
       }
-      window.location.href = 'dashboard.html';
+      $('nome').textContent = data.nome;
+      $('papel').textContent = PAPEIS[data.papel] || data.papel;
+      mostrar('sessao');
     }
 
     // Link de recuperação: o Supabase abre a página já autenticada em modo de recuperação
