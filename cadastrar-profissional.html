@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projeto Finito: cadastrar profissional</title>
+  <style>
+    [hidden] { display:none !important; }
+    :root { --verde:#6EA67F; --roxo:#9484B3; --azul:#BEDBE9; --cinza:#EAE6E3; --texto:#3B3A40; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--cinza); color:var(--texto); }
+    .banner { background:var(--roxo); color:#fff; text-align:center; padding:8px; font-weight:700; font-size:.85rem; letter-spacing:.04em; }
+    header.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 24px; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); flex-wrap:wrap; }
+    header.topo img { height:56px; }
+    .direita { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:flex-end; }
+    .usuario { text-align:right; font-size:.95rem; font-weight:600; color:var(--roxo); }
+    .linkbtn { color:var(--roxo); text-decoration:underline; font-weight:500; font-size:.9rem; }
+    main { max-width:640px; margin:24px auto; padding:0 16px 40px; }
+    h1 { font-size:1.4rem; color:var(--roxo); }
+    h2 { font-size:1.05rem; color:var(--roxo); margin-top:32px; }
+    .painel { background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.08); border-top:4px solid var(--azul); }
+    label { display:block; font-size:.9rem; margin-bottom:14px; }
+    input, select { display:block; width:100%; margin-top:6px; padding:9px; border:1px solid #cfc9c5; border-radius:6px; font-size:1rem; background:#fff; font-family:inherit; }
+    .btn { width:100%; padding:11px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
+    .msg { min-height:1.2em; font-size:.9rem; margin-top:12px; text-align:center; }
+    #resultado { margin-top:16px; padding:14px; background:var(--cinza); border-radius:8px; font-size:.92rem; }
+    .linha-link { display:flex; gap:8px; margin-top:8px; }
+    .linha-link input { margin-top:0; font-size:.85rem; }
+    .btn-sec { width:auto; padding:8px 14px; background:var(--roxo); }
+    table { width:100%; border-collapse:collapse; font-size:.9rem; background:#fff; border-radius:8px; overflow:hidden; }
+    td, th { padding:8px; border-bottom:1px solid #eee; text-align:left; }
+    th { color:var(--verde); }
+  </style>
+</head>
+<body>
+  <div class="banner">DEMONSTRAÇÃO: dados fictícios</div>
+
+  <header class="topo">
+    <img src="logo.png" alt="Projeto Finito">
+    <div class="direita">
+      <a class="linkbtn" href="dashboard.html">Voltar ao painel</a>
+      <div class="usuario" id="nome"></div>
+    </div>
+  </header>
+
+  <main>
+    <h1>Cadastrar profissional</h1>
+
+    <div class="painel">
+      <form id="form">
+        <label>Nome completo *
+          <input id="nome-prof" required>
+        </label>
+        <label>E-mail *
+          <input type="email" id="email" required>
+        </label>
+        <label>Área de atuação *
+          <select id="area" required></select>
+        </label>
+        <label id="lbl-outra" hidden>Nova área *
+          <input id="area-outra" placeholder="Digite a nova área">
+        </label>
+        <button class="btn" type="submit" id="enviar">Cadastrar e gerar link de acesso</button>
+        <p class="msg" id="msg" role="alert"></p>
+      </form>
+
+      <div id="resultado" hidden>
+        <p style="margin:0 0 6px">Envie este link ao profissional. Ele abre o link, define a própria senha e entra no sistema. O link tem prazo e serve uma única vez.</p>
+        <div class="linha-link">
+          <input id="link" readonly>
+          <button class="btn btn-sec" type="button" id="copiar">Copiar</button>
+        </div>
+        <p id="aviso" style="margin:8px 0 0;color:#7a2030"></p>
+      </div>
+    </div>
+
+    <h2>Profissionais cadastrados</h2>
+    <div id="lista"></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    // Chave pública (publishable). A criação do login é feita pela função do servidor, que valida o master.
+    const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const ADMIN = '__admin__', OUTRA = '__outra__';
+
+    async function carregarAreas() {
+      const { data } = await sb.from('areas_atuacao').select('nome').order('nome');
+      $('area').innerHTML = '<option value="">Selecione</option>' +
+        (data || []).map((a) => `<option value="${esc(a.nome)}">${esc(a.nome)}</option>`).join('') +
+        `<option value="${ADMIN}">Administrador (perfil master)</option>` +
+        '<option value="" disabled>ESF (em breve)</option>' +
+        `<option value="${OUTRA}">Outra (escrever nova)</option>`;
+    }
+
+    async function carregarLista() {
+      const { data } = await sb.from('usuarios').select('nome,email,papel,area,ativo').order('nome');
+      $('lista').innerHTML = `<table><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Área</th></tr>` +
+        (data || []).map((u) => `<tr><td>${esc(u.nome)}</td><td>${esc(u.email)}</td><td>${u.papel === 'master' ? 'Master' : 'Profissional'}</td><td>${esc(u.area || '—')}</td></tr>`).join('') +
+        '</table>';
+    }
+
+    async function mensagemErro(error) {
+      try { const j = await error.context.json(); return j.erro || error.message; }
+      catch { return error.message; }
+    }
+
+    $('area').addEventListener('change', () => { $('lbl-outra').hidden = $('area').value !== OUTRA; });
+
+    $('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const m = $('msg');
+      const v = $('area').value;
+      let tipo = 'prestador', area = v;
+      if (v === ADMIN) { tipo = 'master'; area = null; }
+      else if (v === OUTRA) {
+        area = $('area-outra').value.trim();
+        if (!area) { m.textContent = 'Digite o nome da nova área.'; return; }
+      }
+      if (!v) { m.textContent = 'Escolha a área de atuação.'; return; }
+
+      $('enviar').disabled = true;
+      m.textContent = 'Cadastrando...';
+      $('resultado').hidden = true;
+      const { data, error } = await sb.functions.invoke('criar-profissional', {
+        body: { nome: $('nome-prof').value.trim(), email: $('email').value.trim(), tipo, area },
+      });
+      $('enviar').disabled = false;
+
+      if (error) { m.textContent = await mensagemErro(error); return; }
+      if (data?.erro) { m.textContent = data.erro; return; }
+
+      m.textContent = 'Profissional cadastrado.';
+      if (data.link) { $('link').value = data.link; $('resultado').hidden = false; }
+      $('aviso').textContent = data.aviso || '';
+      e.target.reset();
+      $('lbl-outra').hidden = true;
+      await carregarAreas();
+      await carregarLista();
+    });
+
+    $('copiar').addEventListener('click', async () => {
+      await navigator.clipboard.writeText($('link').value);
+      $('copiar').textContent = 'Copiado';
+    });
+
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { location.href = 'index.html'; return; }
+      const { data: u } = await sb.from('usuarios').select('nome,papel').eq('auth_uid', session.user.id).maybeSingle();
+      if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
+      if (u.papel !== 'master') { location.href = 'dashboard.html'; return; }
+      $('nome').textContent = u.nome;
+      await carregarAreas();
+      await carregarLista();
+    })();
+  </script>
+</body>
+</html>
