@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projeto Finito: finalizar visita</title>
+  <style>
+    :root { --verde:#6EA67F; --roxo:#9484B3; --azul:#BEDBE9; --cinza:#EAE6E3; --texto:#3B3A40; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--cinza); color:var(--texto); }
+    .banner { background:var(--roxo); color:#fff; text-align:center; padding:8px; font-weight:700; font-size:.85rem; letter-spacing:.04em; }
+    header.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 24px; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); flex-wrap:wrap; }
+    header.topo img { height:56px; }
+    .direita { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:flex-end; }
+    .usuario { text-align:right; font-size:.9rem; }
+    .usuario strong { color:var(--roxo); }
+    .linkbtn { color:var(--roxo); text-decoration:underline; font-weight:500; font-size:.9rem; }
+    main { max-width:560px; margin:24px auto; padding:0 16px 40px; }
+    h1 { font-size:1.4rem; color:var(--roxo); }
+    .painel { background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.08); border-top:4px solid var(--azul); }
+    .resumo { background:var(--cinza); padding:12px; border-radius:8px; margin-bottom:16px; font-size:.95rem; }
+    label.campo { display:block; font-size:.9rem; margin-bottom:14px; }
+    input[type="file"] { display:block; width:100%; margin-top:6px; }
+    #previa { display:none; max-width:100%; border-radius:8px; margin:8px 0 14px; border:1px solid #ddd; }
+    .aviso { font-size:.85rem; color:#6b6670; background:#f7f5f3; padding:10px; border-radius:6px; margin-bottom:14px; }
+    .btn { width:100%; padding:11px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
+    .btn:disabled { background:#b9c8bf; cursor:not-allowed; }
+    .msg { min-height:1.2em; font-size:.9rem; margin-top:12px; text-align:center; }
+    .ok { text-align:center; margin-top:14px; }
+  </style>
+</head>
+<body>
+  <div class="banner">DEMONSTRAÇÃO: dados fictícios</div>
+
+  <header class="topo">
+    <img src="logo.png" alt="Projeto Finito">
+    <div class="direita">
+      <a class="linkbtn" href="agendar-visita.html">Voltar à agenda</a>
+      <div class="usuario">
+        <div>Olá, <strong id="nome"></strong></div>
+        <div>Profissional</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <h1>Finalizar visita</h1>
+
+    <div class="painel">
+      <div class="resumo" id="resumo">Carregando visita...</div>
+
+      <form id="form" hidden>
+        <label class="campo">Foto da folha de evolução *
+          <input type="file" id="foto" accept="image/*" capture="environment" required>
+        </label>
+        <img id="previa" alt="Prévia da evolução">
+        <p class="aviso">A evolução só é registrada como realizada após o envio. O armazenamento da foto será configurado depois que o local de guarda for definido.</p>
+        <button class="btn" type="submit" id="enviar" disabled>Enviar evolução e concluir visita</button>
+        <p class="msg" id="msg" role="alert"></p>
+      </form>
+
+      <p class="ok" id="ok" hidden><a href="agendar-visita.html">Voltar à agenda</a></p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    // Chave pública (publishable). O RLS do banco permite registrar evolução apenas em visita própria e agendada.
+    const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
+
+    const $ = (id) => document.getElementById(id);
+    const fmt = (iso) => (iso ? iso.split('-').reverse().join('/') : '—');
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    let eu = null, visita = null;
+
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { location.href = 'index.html'; return; }
+      const { data: u } = await sb.from('usuarios').select('id,nome,papel,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
+      if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
+      if (u.papel !== 'prestador') { location.href = 'dashboard.html'; return; }
+      eu = u;
+      $('nome').textContent = eu.nome;
+
+      const id = new URLSearchParams(location.search).get('id');
+      if (!id) { $('resumo').textContent = 'Visita não informada.'; return; }
+
+      const { data: v } = await sb.from('visitas').select('id,paciente_id,data_visita,situacao,prestador_id').eq('id', id).maybeSingle();
+      if (!v || v.prestador_id !== eu.id) { $('resumo').textContent = 'Visita não encontrada.'; return; }
+      if (v.situacao !== 'agendada') { $('resumo').textContent = 'Esta visita já foi concluída.'; return; }
+
+      const { data: p } = await sb.from('pacientes').select('nome').eq('id', v.paciente_id).maybeSingle();
+      visita = v;
+      $('resumo').innerHTML = `<strong>Paciente:</strong> ${esc(p?.nome || '—')}<br><strong>Data da visita:</strong> ${fmt(v.data_visita)}`;
+      $('form').hidden = false;
+    })();
+
+    $('foto').addEventListener('change', () => {
+      const f = $('foto').files[0];
+      if (!f) { $('previa').style.display = 'none'; $('enviar').disabled = true; return; }
+      $('previa').src = URL.createObjectURL(f);
+      $('previa').style.display = 'block';
+      $('enviar').disabled = false;
+    });
+
+    $('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const m = $('msg');
+      if (!visita) return;
+      $('enviar').disabled = true;
+      m.textContent = 'Enviando...';
+
+      // PENDENTE: gravar o arquivo da foto quando o local de armazenamento for definido.
+      // Até lá, registra-se apenas a evolução (metadados), o que conclui a visita.
+      const { error } = await sb.from('evolucoes').insert({
+        cidade_id: eu.cidade_id, visita_id: visita.id, paciente_id: visita.paciente_id, prestador_id: eu.id,
+      });
+      if (error) {
+        m.textContent = 'Erro ao concluir a visita: ' + error.message;
+        $('enviar').disabled = false;
+        return;
+      }
+      m.textContent = 'Visita concluída com sucesso.';
+      $('form').hidden = true;
+      $('ok').hidden = false;
+    });
+  </script>
+</body>
+</html>
