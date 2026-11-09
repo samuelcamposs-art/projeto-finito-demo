@@ -24,17 +24,22 @@
     .btn { width:100%; padding:11px; border:0; border-radius:6px; color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
     .btn-confirma { background:var(--verde); }
     .btn-finaliza { background:var(--roxo); }
+    .btn-pequeno { width:auto; padding:6px 12px; font-size:.85rem; border-radius:6px; border:0; color:#fff; cursor:pointer; font-weight:600; }
+    .b-concluir { background:var(--verde); text-decoration:none; display:inline-block; }
+    .b-cancelar { background:#9a3a4a; }
+    .b-doc { background:#e6e2ef; color:#9a9aa6; cursor:not-allowed; }
     .msg { min-height:1.2em; font-size:.9rem; margin-top:12px; text-align:center; }
     .topo-lista { display:flex; justify-content:space-between; align-items:center; margin-top:32px; }
     h2 { font-size:1.05rem; color:var(--roxo); margin:0; }
     table { width:100%; border-collapse:collapse; font-size:.9rem; background:#fff; border-radius:8px; overflow:hidden; }
-    td, th { padding:8px; border-bottom:1px solid #eee; text-align:left; }
+    td, th { padding:8px; border-bottom:1px solid #eee; text-align:left; vertical-align:middle; }
     th { color:var(--verde); }
     .pac-link { color:var(--roxo); font-weight:600; text-decoration:underline; }
     .vazio { color:#888; font-size:.9rem; }
     .linkbtn-btn { background:transparent; border:0; color:var(--roxo); text-decoration:underline; font-weight:500; cursor:pointer; font-size:.9rem; }
-    dialog { border:0; border-radius:12px; padding:20px; width:min(700px,94vw); max-height:86vh; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+    dialog { border:0; border-radius:12px; padding:20px; width:min(760px,94vw); max-height:86vh; box-shadow:0 10px 40px rgba(0,0,0,.25); }
     dialog::backdrop { background:rgba(59,58,64,.5); }
+    .dialog-acoes { display:flex; gap:10px; justify-content:flex-end; margin-top:16px; }
   </style>
 </head>
 <body>
@@ -83,6 +88,15 @@
     <p style="text-align:right"><button class="btn btn-confirma" style="width:auto;padding:8px 16px" id="fechar-agenda">Fechar</button></p>
   </dialog>
 
+  <dialog id="confirma">
+    <h2 style="color:var(--roxo);margin-top:0">Cancelar agendamento</h2>
+    <p>Quer cancelar agendamento?</p>
+    <div class="dialog-acoes">
+      <button class="btn-pequeno" style="background:#9a9aa6" id="nao">Não</button>
+      <button class="btn-pequeno b-cancelar" id="sim">Sim</button>
+    </div>
+  </dialog>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
     // Chave pública (publishable). O RLS do banco limita os pacientes e as visitas ao próprio profissional.
@@ -92,7 +106,7 @@
     const HOJE = new Date().toISOString().slice(0, 10);
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const fmt = (iso) => (iso ? iso.split('-').reverse().join('/') : '—');
-    let eu = null, nomes = new Map();
+    let eu = null, nomes = new Map(), idCancelar = null;
 
     async function carregarPacientes() {
       const { data: des } = await sb.from('designacoes').select('paciente_id').eq('usuario_id', eu.id).eq('ativa', true);
@@ -105,31 +119,64 @@
         ativos.map((p) => `<option value="${p.id}">${esc(p.nome)}</option>`).join('');
     }
 
-    async function buscarAgenda(limite) {
-      let q = sb.from('visitas').select('id,paciente_id,data_visita,observacao')
-        .eq('situacao', 'agendada').gte('data_visita', HOJE).order('data_visita');
-      if (limite) q = q.limit(limite);
-      const { data } = await q;
-      return data || [];
+    // Próximas visitas: apenas agendadas, a partir de hoje
+    async function carregarLista() {
+      const { data } = await sb.from('visitas').select('id,paciente_id,data_visita,observacao')
+        .eq('situacao', 'agendada').gte('data_visita', HOJE).order('data_visita').limit(5);
+      $('lista').innerHTML = tabelaSimples(data || []);
     }
 
-    // Nome do paciente abre o perfil
-    function tabelaAgenda(lista) {
+    function tabelaSimples(lista) {
       if (!lista.length) return '<p class="vazio">Nenhuma visita agendada.</p>';
       return `<table><tr><th>Data</th><th>Paciente</th><th>Observação</th></tr>` +
         lista.map((v) => `<tr><td>${fmt(v.data_visita)}</td><td><a class="pac-link" href="perfil-paciente.html?id=${v.paciente_id}">${esc(nomes.get(v.paciente_id) || '—')}</a></td><td>${esc(v.observacao || '')}</td></tr>`).join('') +
         '</table>';
     }
 
-    async function carregarLista() {
-      $('lista').innerHTML = tabelaAgenda(await buscarAgenda(5));
+    // Agenda completa: todas as visitas não canceladas, com ações
+    async function abrirAgendaCompleta() {
+      const { data } = await sb.from('visitas').select('id,paciente_id,data_visita,situacao')
+        .neq('situacao', 'cancelada').order('data_visita');
+      const linhas = (data || []).map((v) => {
+        const acao = v.situacao === 'agendada'
+          ? `<a class="btn-pequeno b-concluir" href="finalizar-visita.html?id=${v.id}">Concluir</a>`
+          : '—';
+        const cancelar = v.situacao === 'agendada'
+          ? `<button class="btn-pequeno b-cancelar" data-cancelar="${v.id}">Cancelar</button>`
+          : `<button class="btn-pequeno b-doc" disabled title="Documento disponível após a definição do armazenamento">📄</button>`;
+        return `<tr><td>${fmt(v.data_visita)}</td>` +
+          `<td><a class="pac-link" href="perfil-paciente.html?id=${v.paciente_id}">${esc(nomes.get(v.paciente_id) || '—')}</a></td>` +
+          `<td>${acao}</td><td>${cancelar}</td></tr>`;
+      });
+      $('agenda-corpo').innerHTML = linhas.length
+        ? `<table><tr><th>Data</th><th>Paciente</th><th></th><th></th></tr>${linhas.join('')}</table>`
+        : '<p class="vazio">Nenhuma visita na agenda.</p>';
+      $('agenda').showModal();
     }
 
-    $('ver-agenda').addEventListener('click', async () => {
-      $('agenda-corpo').innerHTML = tabelaAgenda(await buscarAgenda(500));
-      $('agenda').showModal();
-    });
+    $('ver-agenda').addEventListener('click', abrirAgendaCompleta);
     $('fechar-agenda').addEventListener('click', () => $('agenda').close());
+
+    // Cancelamento com confirmação (Sim/Não). Agendamento é descartável: a visita vira "cancelada".
+    $('agenda-corpo').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-cancelar]');
+      if (!b) return;
+      idCancelar = b.dataset.cancelar;
+      $('confirma').showModal();
+    });
+    $('nao').addEventListener('click', () => { idCancelar = null; $('confirma').close(); });
+    $('sim').addEventListener('click', async () => {
+      if (!idCancelar) return;
+      const { error } = await sb.from('visitas')
+        .update({ situacao: 'cancelada', cancelada_motivo: 'Cancelado pelo profissional' })
+        .eq('id', idCancelar);
+      $('confirma').close();
+      idCancelar = null;
+      if (error) { $('msg').textContent = 'Não foi possível cancelar: ' + error.message; return; }
+      $('msg').textContent = 'Agendamento cancelado.';
+      await abrirAgendaCompleta();
+      await carregarLista();
+    });
 
     async function criarVisita(pid, data, obs) {
       const { data: v, error } = await sb.from('visitas')
