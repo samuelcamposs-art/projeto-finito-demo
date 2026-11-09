@@ -114,6 +114,12 @@
     <p style="text-align:right"><button class="btn" id="fechar-clinico">Fechar</button></p>
   </dialog>
 
+  <!-- Evolução da visita -->
+  <dialog id="evol">
+    <div id="evol-corpo"></div>
+    <p style="text-align:right"><button class="btn" id="fechar-evol">Fechar</button></p>
+  </dialog>
+
   <!-- Edição (somente master) -->
   <dialog id="editar">
     <h2>Editar perfil</h2>
@@ -185,6 +191,11 @@
     const kv = (pares) => pares.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v ?? '—')}</dd>`).join('');
     const tab = (cab, linhas) => linhas.length
       ? `<table><tr>${cab.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${linhas.map((l) => `<tr>${l.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table>`
+      : '<p class="vazio">Nenhum registro.</p>';
+
+    // Tabela das visitas por área, com botão para abrir a evolução da visita
+    const tabEvol = (linhas) => linhas.length
+      ? `<table><tr><th>Data</th><th>Profissional</th><th>Evolução</th></tr>${linhas.map((l) => `<tr><td>${esc(l[0])}</td><td>${esc(l[1])}</td><td><button data-visita="${esc(l[2])}" style="padding:4px 10px;font-size:.8rem;border:0;border-radius:6px;background:var(--verde);color:#fff;cursor:pointer">Ver evolução</button></td></tr>`).join('')}</table>`
       : '<p class="vazio">Nenhum registro.</p>';
 
     let me = null, P = null, S = null, COMS_LISTA = [], COMS_PAC = [], DES = [], VIS = [], USU = new Map(), FUTURAS = [];
@@ -269,13 +280,13 @@
       for (const x of realizadas) {
         const area = USU.get(x.prestador_id)?.area || '—';
         if (!porArea.has(area)) porArea.set(area, []);
-        porArea.get(area).push([fmt(x.data_visita), USU.get(x.prestador_id)?.nome || '—']);
+        porArea.get(area).push([fmt(x.data_visita), USU.get(x.prestador_id)?.nome || '—', x.id]);
       }
       $('clinico-corpo').innerHTML = comorbidadesHtml() +
         '<p class="area-titulo">Visitas realizadas por área</p>' +
         (porArea.size
           ? [...porArea.entries()].map(([area, linhas]) =>
-              `<p class="area-titulo">${esc(area)}</p>${tab(['Data', 'Profissional'], linhas.sort((a, b) => b[0].localeCompare(a[0])))}`).join('')
+              `<p class="area-titulo">${esc(area)}</p>${tabEvol(linhas.sort((a, b) => b[0].localeCompare(a[0])))}`).join('')
           : '<p class="vazio">Nenhuma visita realizada.</p>');
 
       // Ficha para impressão
@@ -381,6 +392,25 @@
         location.reload();
       } catch (err) { m.textContent = err.message; }
     });
+
+    $('clinico-corpo').addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-visita]');
+      if (!b) return;
+      const { data: ev, error } = await sb.from('evolucoes')
+        .select('enviada_em,prestador_id,arquivo_disponivel,arquivo_removido_em,arquivo_caminho')
+        .eq('visita_id', b.dataset.visita).maybeSingle();
+      let txt;
+      if (error) txt = 'Não foi possível carregar a evolução.';
+      else if (!ev) txt = 'Evolução visível apenas para o master e para o profissional que a enviou.';
+      else if (!ev.arquivo_disponivel) txt = `A imagem foi removida em ${fmt(ev.arquivo_removido_em?.slice(0, 10))} porque a evolução passou do limite de evoluções guardadas. O registro permanece.`;
+      else if (!ev.arquivo_caminho) txt = 'Imagem ainda não armazenada: o local de guarda ainda não foi definido.';
+      else txt = 'Imagem disponível.';
+      $('evol-corpo').innerHTML = '<h2 style="color:var(--roxo);margin-top:0">Evolução da visita</h2>' +
+        (ev ? `<dl class="kv">${kv([['Enviada em', new Date(ev.enviada_em).toLocaleString('pt-BR')], ['Enviada por', USU.get(ev.prestador_id)?.nome || '—']])}</dl>` : '') +
+        `<p>${esc(txt)}</p>`;
+      $('evol').showModal();
+    });
+    $('fechar-evol').addEventListener('click', () => $('evol').close());
 
     $('btn-clinico').addEventListener('click', () => $('clinico').showModal());
     $('fechar-clinico').addEventListener('click', () => $('clinico').close());
