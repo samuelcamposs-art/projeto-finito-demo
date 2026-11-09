@@ -14,40 +14,45 @@
     header.topo img { height:56px; }
     .direita { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:flex-end; }
     .usuario { text-align:right; font-size:.95rem; font-weight:600; color:var(--roxo); }
-    .btn { display:inline-block; padding:9px 16px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-weight:600; cursor:pointer; text-decoration:none; font-size:.95rem; }
-    .linkbtn { background:transparent; color:var(--roxo); text-decoration:underline; font-weight:500; padding:0; border:0; cursor:pointer; font-size:.9rem; }
-    main { max-width:1100px; margin:20px auto; padding:0 16px 40px; }
-    .filtros { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; background:#fff; padding:14px; border-radius:12px; margin-bottom:16px; border-top:4px solid var(--azul); }
-    .filtros label { font-size:.85rem; display:flex; flex-direction:column; gap:4px; }
-    select, input { padding:7px; border:1px solid #cfc9c5; border-radius:6px; font-size:.9rem; background:#fff; }
-    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:16px; }
-    .kpi { background:#fff; padding:14px; border-radius:12px; border-left:5px solid var(--verde); }
-    .kpi b { display:block; font-size:1.5rem; color:var(--roxo); }
-    .kpi span { font-size:.8rem; }
-    .grade { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
-    .card { background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.06); }
-    .clicavel { cursor:pointer; transition:box-shadow .15s; }
-    .clicavel:hover { box-shadow:0 4px 14px rgba(148,132,179,.35); }
-    .card h2 { font-size:1rem; margin:0 0 10px; color:var(--roxo); }
-    .rodape { font-size:.8rem; color:#7b7880; margin:8px 0 0; }
-    table { width:100%; border-collapse:collapse; font-size:.85rem; }
-    td, th { padding:6px; border-bottom:1px solid #eee; text-align:left; }
-    th { color:var(--verde); }
+    .linkbtn { color:var(--roxo); text-decoration:underline; font-weight:500; font-size:.9rem; background:none; border:0; cursor:pointer; padding:0; }
+    main { max-width:1040px; margin:24px auto; padding:0 16px 40px; }
+    h1 { font-size:1.4rem; color:var(--roxo); margin:0 0 14px; }
+    h2 { font-size:1.05rem; color:var(--roxo); margin:28px 0 12px; }
+    .filtros { background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.08); display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; align-items:end; }
+    label { font-size:.85rem; display:block; }
+    select, input[type=date] { display:block; width:100%; margin-top:4px; padding:8px; border:1px solid #cfc9c5; border-radius:6px; font-size:.95rem; background:#fff; font-family:inherit; }
+    .btn { padding:9px 14px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-weight:600; cursor:pointer; font-size:.95rem; }
+    .btn-sec { padding:9px 14px; border:0; border-radius:6px; background:var(--roxo); color:#fff; font-weight:600; cursor:pointer; font-size:.95rem; text-decoration:none; display:inline-block; }
+    .msg { min-height:1.2em; font-size:.9rem; margin:10px 0 0; color:#7a2030; }
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+    .card { background:#fff; border:0; border-top:4px solid var(--azul); border-radius:12px; padding:14px; text-align:left; cursor:pointer; box-shadow:0 2px 8px rgba(59,58,64,.08); font-family:inherit; }
+    .card:hover { border-top-color:var(--verde); }
+    .num { display:block; font-size:1.7rem; font-weight:700; color:var(--roxo); }
+    .rot { font-size:.88rem; color:var(--texto); }
+    .listas { display:flex; flex-wrap:wrap; gap:8px; }
+    .listas button { background:#fff; border:1px solid #cfc9c5; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:.9rem; font-family:inherit; color:var(--texto); }
+    .listas button:hover { border-color:var(--verde); }
     .pac-link { color:var(--roxo); font-weight:600; text-decoration:underline; }
-    .vazio { color:#888; font-size:.85rem; }
-    .acoes { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:0 0 16px; font-size:.9rem; }
+    table { width:100%; border-collapse:collapse; font-size:.88rem; }
+    td, th { padding:7px; border-bottom:1px solid #eee; text-align:left; vertical-align:top; }
+    th { color:var(--verde); }
+    .vazio { color:#888; font-size:.9rem; }
     dialog { border:0; border-radius:12px; padding:20px; width:min(900px,94vw); max-height:86vh; box-shadow:0 10px 40px rgba(0,0,0,.25); }
     dialog::backdrop { background:rgba(59,58,64,.5); }
-    dialog h2 { color:var(--roxo); margin-top:0; }
-    #impressao, #cabecalho-impressao { display:none; }
+    .dialog-acoes { display:flex; gap:10px; justify-content:flex-end; margin-top:16px; }
+    .cab-impr { display:none; font-size:.85rem; margin-bottom:12px; border-bottom:1px solid #ccc; padding-bottom:8px; }
+    .impr { display:none; }
     @media print {
-      body { background:#fff; }
-      .banner, header.topo, .nao-imprimir, .grade, .cards, dialog { display:none !important; }
-      #impressao { display:block; }
-      #cabecalho-impressao { display:block; margin-bottom:12px; font-size:12px; }
-      #impressao > div { break-inside:avoid; margin-bottom:14px; }
-      #impressao h3 { color:#000; font-size:14px; margin:6px 0; }
-      .oculto-impressao { display:none !important; }
+      body * { visibility:hidden; }
+      dialog[open], dialog[open] * { visibility:visible; }
+      dialog[open] { position:absolute; left:0; top:0; width:100%; max-height:none; box-shadow:none; border:0; margin:0; padding:0; }
+      dialog::backdrop { display:none; }
+      .no-print { display:none !important; }
+      .cab-impr { display:block; }
+      .tela { display:none; }
+      .impr { display:inline; }
+      .pac-link { color:#000; text-decoration:none; }
+      td, th { padding:4px; }
     }
   </style>
 </head>
@@ -57,304 +62,317 @@
   <header class="topo">
     <img src="logo.png" alt="Projeto Finito">
     <div class="direita">
-      <a class="btn" id="btn-acao" href="#" hidden></a>
-      <a class="btn" id="btn-prof" href="cadastrar-profissional.html" hidden>Cadastrar profissional</a>
-      <div class="usuario" id="nome"></div>
+      <a class="linkbtn" id="lk-paciente" href="cadastrar-paciente.html" hidden>Cadastrar paciente</a>
+      <a class="linkbtn" id="lk-acesso" href="cadastrar-profissional.html" hidden>Cadastrar novo acesso</a>
+      <a class="linkbtn" id="lk-agendar" href="agendar-visita.html" hidden>Agendar visita</a>
+      <div class="usuario"><span id="nome"></span><div id="papel-txt" style="font-weight:400;font-size:.85rem"></div></div>
       <button class="linkbtn" id="sair">Sair</button>
     </div>
   </header>
 
   <main>
-    <div id="cabecalho-impressao"></div>
+    <h1>Painel</h1>
 
-    <form class="filtros nao-imprimir" onsubmit="return false">
-      <label>De <input type="date" id="f-de"></label>
-      <label>Até <input type="date" id="f-ate"></label>
-      <label id="lbl-prest" hidden>Prestador <select id="f-prest"></select></label>
-      <label>Situação do paciente <select id="f-sit"></select></label>
-      <button type="button" class="btn" id="aplicar">Aplicar</button>
-    </form>
+    <section class="filtros no-print">
+      <label>Período de<input type="date" id="ini"></label>
+      <label>até<input type="date" id="fim"></label>
+      <label id="f-prest" hidden>Profissional<select id="prestador"></select></label>
+      <label id="f-area" hidden>Área<select id="area"></select></label>
+      <label>Situação do paciente
+        <select id="situacao">
+          <option value="">Todas</option>
+          <option value="ativo">Ativos</option>
+          <option value="em_espera">Em espera</option>
+          <option value="interrompido">Interrompidos</option>
+          <option value="falecido">Falecidos</option>
+        </select>
+      </label>
+      <div><button class="btn" id="aplicar">Aplicar período</button></div>
+    </section>
+    <p class="msg" id="msg" role="alert"></p>
 
-    <div class="acoes nao-imprimir">
-      <span>Incluir no PDF:</span>
-      <div id="checks"></div>
-      <button type="button" class="btn" id="pdf">Exportar PDF</button>
-    </div>
+    <h2>Pacientes na data final do período</h2>
+    <section class="cards">
+      <button class="card" data-lista="pacientes"><span class="num" id="n-pacientes">–</span><span class="rot">Pacientes</span></button>
+      <button class="card" data-lista="ativo"><span class="num" id="n-ativo">–</span><span class="rot">Ativos</span></button>
+      <button class="card" data-lista="em_espera"><span class="num" id="n-em_espera">–</span><span class="rot">Em espera</span></button>
+      <button class="card" data-lista="interrompido"><span class="num" id="n-interrompido">–</span><span class="rot">Interrompidos</span></button>
+      <button class="card" data-lista="falecido"><span class="num" id="n-falecido">–</span><span class="rot">Falecidos</span></button>
+      <button class="card" data-lista="idade"><span class="num" id="n-idade">–</span><span class="rot">Idade média (ativos)</span></button>
+    </section>
 
-    <p id="erro" style="color:#7a2030"></p>
-    <div id="kpis"></div>
-    <div class="grade" id="grade"></div>
-    <p class="rodape nao-imprimir">Clique em um relatório para ver os dados completos. Clique no nome de um paciente para abrir o perfil.</p>
-    <div id="impressao"></div>
+    <h2>Visitas e acompanhamento no período</h2>
+    <section class="cards">
+      <button class="card" data-lista="visitas_ok"><span class="num" id="n-visitas_ok">–</span><span class="rot">Visitas concluídas</span></button>
+      <button class="card" data-lista="visitas_espera"><span class="num" id="n-visitas_espera">–</span><span class="rot">Visitas em espera</span></button>
+      <button class="card" data-lista="sem_conclusao"><span class="num" id="n-sem_conclusao">–</span><span class="rot">Agendamentos sem conclusão</span></button>
+      <button class="card" data-lista="visitas_paciente"><span class="num" id="n-visitas_paciente">–</span><span class="rot">Visitas por paciente (média)</span></button>
+      <button class="card" data-lista="tempo"><span class="num" id="n-tempo">–</span><span class="rot">Tempo médio (meses)</span></button>
+    </section>
+
+    <h2>Listas para consulta e impressão</h2>
+    <section class="listas">
+      <button data-lista="sexo">Sexo</button>
+      <button data-lista="faixa">Faixa etária</button>
+      <button data-lista="situacao">Situação</button>
+      <button data-lista="bairro">Bairro</button>
+      <button data-lista="esf">ESF</button>
+      <button data-lista="comorbidade">Comorbidade</button>
+      <button data-lista="visitas_realizadas">Visitas realizadas</button>
+      <button data-lista="visitas_agendadas">Visitas agendadas</button>
+      <button data-lista="ativos_sem_visita">Ativos sem visitas há 60+ dias</button>
+      <button data-lista="equipe">Equipe</button>
+      <button data-lista="pendencias">Cadastros incompletos</button>
+    </section>
   </main>
 
   <dialog id="detalhe">
-    <div id="detalhe-corpo"></div>
-    <p style="text-align:right"><button class="btn" id="fechar">Fechar</button></p>
+    <h2 id="d-titulo" style="margin-top:0"></h2>
+    <div class="cab-impr" id="d-cab"></div>
+    <div id="d-corpo"></div>
+    <div class="dialog-acoes no-print">
+      <button class="btn-sec" type="button" id="d-imprimir">Imprimir / salvar em PDF</button>
+      <button class="btn" type="button" id="d-fechar">Fechar</button>
+    </div>
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
-    // Chave pública (publishable). O acesso aos dados é controlado pelo RLS do banco.
+    // Chave pública (publishable). O banco aplica a visibilidade de cada perfil às funções do painel.
     const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
 
     const $ = (id) => document.getElementById(id);
-    const HOJE = new Date().toISOString().slice(0, 10);
-    const PAPEL = { master: 'Master', prestador: 'Profissional' };
-    const STATUS = { em_espera: 'Em espera', ativo: 'Ativo', interrompido: 'Interrompido', falecido: 'Falecido' };
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const DIAS_SEM_VISITA = 60;
+    const hojeLocal = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+    const fmtData = (iso) => (iso ? iso.split('-').reverse().join('/') : '—');
+    const primeiroNome = (n) => (n || '').trim().split(/\s+/)[0] || '';
+    const pt1 = (x) => x.toFixed(1).replace('.', ',');
+    const ROTULO = { ativo: 'Ativo', em_espera: 'Em espera', interrompido: 'Interrompido', falecido: 'Falecido' };
     const SEXO = { feminino: 'Feminino', masculino: 'Masculino', nao_informado: 'Não informado' };
 
-    let eu = null, cidade = null, SECOES = [];
-    let usuarios = new Map(), pacientes = [], sens = new Map(), com = [], visitas = [], designacoes = [], agenda = [];
+    let eu = null, usuarios = new Map(), pacientes = [], visitas = [], ini = '', fim = '', hoje = '';
 
-    const dias = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
-    const anos = (nasc) => Math.floor(dias(nasc, HOJE) / 365.25);
-    const fmt = (iso) => (iso ? iso.split('-').reverse().join('/') : '—');
-    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const kpi = (v, r) => `<div class="kpi"><b>${esc(v)}</b><span>${esc(r)}</span></div>`;
-    const perfilHref = (id) => `perfil-paciente.html?id=${id}`;
-    const linkPac = (id, nome) => ({ t: nome || '—', href: perfilHref(id) });
+    // Datas como AAAA-MM-DD, sem fuso
+    const ts = (s) => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+    const diasEntre = (a, b) => Math.round((ts(b) - ts(a)) / 86400000);
+    const idadeEm = (nasc, ref) => {
+      const [y, m, d] = nasc.split('-').map(Number); const [Y, M, D] = ref.split('-').map(Number);
+      let a = Y - y; if (M < m || (M === m && D < d)) a--; return a;
+    };
+    const nomeLink = (id, nome) => `<a class="pac-link" href="perfil-paciente.html?id=${id}"><span class="tela">${esc(primeiroNome(nome))}</span><span class="impr">${esc(nome)}</span></a>`;
 
-    // Célula pode ser texto ou {t, href}: o segundo gera link (ex.: nome do paciente)
-    const cel = (c) => (c && typeof c === 'object')
-      ? `<a class="pac-link" href="${esc(c.href)}">${esc(c.t)}</a>`
-      : esc(c);
+    // Situação do paciente na data final do período
+    function situacaoEm(p) {
+      if (p.cadastro > fim) return null;
+      if (p.data_obito && p.data_obito <= fim) return 'falecido';
+      if (p.data_interrupcao && p.data_interrupcao <= fim) return 'interrompido';
+      if ((p.datas_atendimento || []).some((d) => d <= fim)) return 'ativo';
+      return 'em_espera';
+    }
+    function tempoDias(p) {
+      const inicio = p.data_inicio || (p.datas_atendimento || [])[0] || p.cadastro;
+      let t = fim;
+      if (p.st === 'falecido') t = p.data_obito; else if (p.st === 'interrompido') t = p.data_interrupcao;
+      return Math.max(0, diasEntre(inicio, t));
+    }
+    const ok = (uid) => {
+      const f = $('prestador').value, a = $('area').value;
+      const u = usuarios.get(uid);
+      return (!f || uid === f) && (!a || (u && u.area === a));
+    };
 
-    function tabela(cab, linhas) {
-      if (!linhas.length) return '<p class="vazio">Sem dados no filtro atual.</p>';
-      return `<table><tr>${cab.map((h) => `<th>${esc(h)}</th>`).join('')}</tr>` +
-        linhas.map((r) => `<tr>${r.map((c) => `<td>${cel(c)}</td>`).join('')}</tr>`).join('') + '</table>';
+    // Monta os conjuntos que alimentam cards e listas
+    let C = {};
+    function calcular() {
+      const sit = $('situacao').value;
+      const temEquipe = !!($('prestador').value || $('area').value);
+      const todos = pacientes.map((p) => ({ ...p, st: situacaoEm(p) })).filter((p) => p.st);
+      const pacs = todos.filter((p) => (!sit || p.st === sit) &&
+        (!temEquipe || p.prestadores.some(ok) || visitas.some((v) => v.paciente_id === p.id && ok(v.prestador_id))));
+      const ids = new Set(pacs.map((p) => p.id));
+      const vis = visitas.filter((v) => ids.has(v.paciente_id) && (!temEquipe || ok(v.prestador_id)));
+
+      const ativos = pacs.filter((p) => p.st === 'ativo');
+      const concl = vis.filter((v) => v.situacao === 'concluida');
+      const agend = vis.filter((v) => v.situacao === 'agendada');
+      const comIdade = ativos.filter((p) => p.data_nascimento)
+        .map((p) => ({ p, idade: idadeEm(p.data_nascimento, fim) })).sort((a, b) => b.idade - a.idade);
+      const tempo = pacs.filter((p) => p.st !== 'em_espera')
+        .map((p) => ({ p, dias: tempoDias(p) })).sort((a, b) => b.dias - a.dias);
+      const mediaTempo = tempo.length ? tempo.reduce((s, x) => s + x.dias, 0) / tempo.length / 30.44 : null;
+      const porPac = pacs.map((p) => ({ p, n: concl.filter((v) => v.paciente_id === p.id).length })).sort((a, b) => b.n - a.n);
+
+      C = {
+        pacs, vis, concl, agend, ativos,
+        espera: agend.filter((v) => v.data_visita > hoje),
+        semConclusao: agend.filter((v) => v.data_visita <= hoje),
+        comIdade,
+        idadeMedia: comIdade.length ? comIdade.reduce((s, x) => s + x.idade, 0) / comIdade.length : null,
+        tempo, mediaTempo, porPac,
+        mediaVisitas: pacs.length ? concl.length / pacs.length : null,
+        semVisita: ativos.filter((p) => {
+          const d = (p.datas_atendimento || []).filter((x) => x <= fim);
+          const ult = d.length ? d[d.length - 1] : null;
+          return !ult || diasEntre(ult, fim) > DIAS_SEM_VISITA;
+        }).map((p) => {
+          const d = (p.datas_atendimento || []).filter((x) => x <= fim);
+          return { p, ult: d.length ? d[d.length - 1] : null };
+        }),
+        todos,
+      };
+      mostrarCards();
     }
 
-    function contar(lista, fn) {
-      const m = new Map();
-      for (const x of lista) { const k = fn(x); m.set(k, (m.get(k) || 0) + 1); }
-      return [...m.entries()].sort((a, b) => b[1] - a[1]);
+    const num = (id, v) => { $(id).textContent = v; };
+    function mostrarCards() {
+      const c = C, n = c.pacs.length;
+      const cont = (st) => c.pacs.filter((p) => p.st === st).length;
+      num('n-pacientes', n);
+      num('n-ativo', cont('ativo'));
+      num('n-em_espera', cont('em_espera'));
+      num('n-interrompido', cont('interrompido'));
+      num('n-falecido', cont('falecido'));
+      num('n-idade', c.idadeMedia == null ? '—' : pt1(c.idadeMedia));
+      num('n-visitas_ok', c.concl.length);
+      num('n-visitas_espera', c.espera.length);
+      num('n-sem_conclusao', c.semConclusao.length);
+      num('n-visitas_paciente', c.mediaVisitas == null ? '—' : pt1(c.mediaVisitas));
+      num('n-tempo', c.mediaTempo == null ? '—' : pt1(c.mediaTempo));
     }
 
-    function faixasDe(idades) {
-      if (!idades.length) return [];
-      const s = [...idades].sort((a, b) => a - b);
-      const k = Math.min(5, new Set(s).size);
-      const tam = Math.ceil(s.length / k);
-      const out = [];
-      for (let i = 0; i < s.length; i += tam) {
-        const g = s.slice(i, i + tam);
-        const a = g[0], b = g[g.length - 1];
-        out.push([a === b ? `${a} anos` : `${a} a ${b} anos`, g.length]);
+    // Listas: tabelas com o conteúdo de cada indicador
+    const tabela = (cab, linhas) => linhas.length
+      ? `<table><tr>${cab.map((x) => `<th>${x}</th>`).join('')}</tr>${linhas.map((l) => `<tr>${l.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</table>`
+      : '<p class="vazio">Nenhum registro.</p>';
+    const linhaPac = (p) => [nomeLink(p.id, p.nome), ROTULO[p.st], esc(p.bairro || '—'), esc(p.esf || '—')];
+    const linhaVis = (v) => [fmtData(v.data_visita), nomeLink(v.paciente_id, v.paciente_nome), esc(v.prestador_nome || '—'), esc(v.area || '—')];
+    const porGrupo = (lista, chaves) => {
+      const g = new Map();
+      lista.forEach((p) => {
+        const ks = chaves(p);
+        ks.forEach((k) => { if (!g.has(k)) g.set(k, []); g.get(k).push(p); });
+      });
+      return [...g.entries()].sort((a, b) => a[0].localeCompare(b[0], 'pt-BR', { numeric: true }));
+    };
+    const tabelaGrupo = (rot, lista, chaves) => tabela([rot, 'Total', 'Pacientes'],
+      porGrupo(lista, chaves).map(([k, ps]) => [esc(k), ps.length, ps.map((p) => nomeLink(p.id, p.nome)).join(', ')]));
+    const faixa = (p) => {
+      if (!p.data_nascimento) return ['Não informado'];
+      const a = idadeEm(p.data_nascimento, fim), b = Math.floor(a / 10) * 10;
+      return [`${b} a ${b + 9} anos`];
+    };
+    const ordemFaixa = (k) => (k === 'Não informado' ? 999 : parseInt(k, 10));
+
+    const pendencias = () => C.pacs.filter((p) => p.dados_incompletos);
+
+    function montar(key) {
+      const c = C;
+      const rec = { ativo: 'Ativos', em_espera: 'Em espera', interrompido: 'Interrompidos', falecido: 'Falecidos' };
+      switch (key) {
+        case 'pacientes': return ['Pacientes', tabela(['Paciente', 'Situação', 'Bairro', 'ESF'], c.pacs.map(linhaPac))];
+        case 'ativo': case 'em_espera': case 'interrompido': case 'falecido':
+          return [rec[key], tabela(['Paciente', 'Situação', 'Bairro', 'ESF'], c.pacs.filter((p) => p.st === key).map(linhaPac))];
+        case 'idade': return ['Idade média: ranking dos pacientes ativos (mais velho ao mais novo)',
+          tabela(['Posição', 'Paciente', 'Idade'], c.comIdade.map((x, i) => [i + 1, nomeLink(x.p.id, x.p.nome), x.idade]))
+          + (c.ativos.length - c.comIdade.length ? `<p class="vazio">${c.ativos.length - c.comIdade.length} paciente(s) sem data de nascimento.</p>` : '')];
+        case 'tempo': return ['Tempo de acompanhamento: ranking do maior ao menor',
+          tabela(['Posição', 'Paciente', 'Situação', 'Início', 'Fim', 'Meses'], c.tempo.map((x, i) => [i + 1, nomeLink(x.p.id, x.p.nome), ROTULO[x.p.st],
+            fmtData(x.p.data_inicio || (x.p.datas_atendimento || [])[0] || x.p.cadastro),
+            fmtData(x.p.st === 'falecido' ? x.p.data_obito : x.p.st === 'interrompido' ? x.p.data_interrupcao : fim),
+            pt1(x.dias / 30.44)]))];
+        case 'visitas_ok': return ['Visitas concluídas no período', tabela(['Data', 'Paciente', 'Profissional', 'Área'], c.concl.slice().sort((a, b) => a.data_visita.localeCompare(b.data_visita)).map(linhaVis))];
+        case 'visitas_espera': return ['Visitas em espera (agendadas para depois de hoje)', tabela(['Data', 'Paciente', 'Profissional', 'Área'], c.espera.slice().sort((a, b) => a.data_visita.localeCompare(b.data_visita)).map(linhaVis))];
+        case 'sem_conclusao': return ['Agendamentos sem conclusão (data já passada)', tabela(['Data', 'Paciente', 'Profissional', 'Área'], c.semConclusao.slice().sort((a, b) => a.data_visita.localeCompare(b.data_visita)).map(linhaVis))];
+        case 'visitas_paciente': return ['Visitas concluídas por paciente', tabela(['Paciente', 'Visitas'], c.porPac.map((x) => [nomeLink(x.p.id, x.p.nome), x.n]))];
+        case 'visitas_realizadas': return ['Visitas realizadas no período', tabela(['Data', 'Paciente', 'Profissional', 'Área'], c.concl.slice().sort((a, b) => a.data_visita.localeCompare(b.data_visita)).map(linhaVis))];
+        case 'visitas_agendadas': return ['Visitas agendadas no período', tabela(['Data', 'Paciente', 'Profissional', 'Área'], c.agend.slice().sort((a, b) => a.data_visita.localeCompare(b.data_visita)).map(linhaVis))];
+        case 'sexo': return ['Sexo', tabelaGrupo('Sexo', c.pacs, (p) => [SEXO[p.sexo] || 'Não informado'])];
+        case 'faixa': return ['Faixa etária (na data final do período)', (() => {
+          const g = porGrupo(c.pacs, faixa).sort((a, b) => ordemFaixa(a[0]) - ordemFaixa(b[0]));
+          return tabela(['Faixa', 'Total', 'Pacientes'], g.map(([k, ps]) => [esc(k), ps.length, ps.map((p) => nomeLink(p.id, p.nome)).join(', ')]));
+        })()];
+        case 'situacao': return ['Situação', tabelaGrupo('Situação', c.pacs, (p) => [ROTULO[p.st]])];
+        case 'bairro': return ['Bairro', tabelaGrupo('Bairro', c.pacs, (p) => [p.bairro || 'Não informado'])];
+        case 'esf': return ['ESF', tabelaGrupo('ESF', c.pacs, (p) => [p.esf || 'Não informado'])];
+        case 'comorbidade': return ['Comorbidade', tabelaGrupo('Comorbidade', c.pacs, (p) => (p.comorbidades.length ? p.comorbidades : ['Sem comorbidade informada']))];
+        case 'ativos_sem_visita': return ['Ativos sem visitas há 60 dias ou mais', tabela(['Paciente', 'Última visita', 'Dias sem visita'],
+          c.semVisita.map((x) => [nomeLink(x.p.id, x.p.nome), x.ult ? fmtData(x.ult) : 'Nunca', x.ult ? diasEntre(x.ult, fim) : '—']))];
+        case 'equipe': {
+          const prof = [...usuarios.values()].filter((u) => u.papel === 'prestador' && ok(u.id)).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+          return ['Equipe: pacientes designados e visitas realizadas no período', tabela(['Profissional', 'Área', 'Pacientes designados', 'Visitas realizadas'],
+            prof.map((u) => [esc(u.nome), esc(u.area || '—'), c.pacs.filter((p) => p.prestadores.includes(u.id)).length, c.concl.filter((v) => v.prestador_id === u.id).length]))];
+        }
+        case 'pendencias': return ['Cadastros incompletos (dados importados a completar)', tabela(['Paciente', 'Bairro', 'ESF'], pendencias().map((p) => [nomeLink(p.id, p.nome), esc(p.bairro || '—'), esc(p.esf || '—')]))];
       }
-      return out;
+      return ['', ''];
     }
 
-    function ultimoPorPaciente(lista) {
-      const m = new Map();
-      for (const v of lista) if (v.situacao === 'concluida') { const a = m.get(v.paciente_id); if (!a || v.data_visita > a) m.set(v.paciente_id, v.data_visita); }
-      return m;
+    function cabecalhoImpressao() {
+      const f = $('prestador').selectedOptions[0], a = $('area').value, s = $('situacao').selectedOptions[0];
+      return `<strong>Período:</strong> ${fmtData(ini)} a ${fmtData(fim)} · <strong>Situação:</strong> ${esc(s ? s.text : 'Todas')}` +
+        ` · <strong>Profissional:</strong> ${esc(f && f.value ? f.text : 'Todos')} · <strong>Área:</strong> ${esc(a || 'Todas')}` +
+        `<br><strong>Gerado em:</strong> ${new Date().toLocaleString('pt-BR')} · <strong>Por:</strong> ${esc(eu.nome)}`;
     }
+
+    function abrir(key) {
+      const [titulo, html] = montar(key);
+      $('d-titulo').textContent = titulo;
+      $('d-cab').innerHTML = cabecalhoImpressao();
+      $('d-corpo').innerHTML = html;
+      $('detalhe').showModal();
+    }
+
+    document.querySelectorAll('[data-lista]').forEach((b) => b.addEventListener('click', () => abrir(b.dataset.lista)));
+    $('d-fechar').addEventListener('click', () => $('detalhe').close());
+    $('d-imprimir').addEventListener('click', () => window.print());
 
     async function carregar() {
-      const [p, s, c, v, d, us, ag, ci] = await Promise.all([
-        sb.from('pacientes').select('id,numero,nome,sexo,bairro,esf,status,data_inicio,data_interrupcao,data_obito,excluido_em'),
-        sb.from('pacientes_sensiveis').select('paciente_id,data_nascimento'),
-        sb.from('paciente_comorbidades').select('paciente_id,comorbidades(nome)'),
-        sb.from('visitas').select('id,paciente_id,prestador_id,data_visita,situacao,excluido_em'),
-        sb.from('designacoes').select('paciente_id,usuario_id,ativa'),
-        sb.from('usuarios').select('id,nome,papel,area,ativo'),
-        sb.from('agenda_designada').select('id,paciente_id,data_visita,situacao,prestador_id'),
-        sb.from('cidades').select('nome,dias_sem_visita_alerta').maybeSingle(),
+      ini = $('ini').value; fim = $('fim').value;
+      if (!ini || !fim || ini > fim) { $('msg').textContent = 'Confira o período: a data inicial deve ser anterior à final.'; return; }
+      $('msg').textContent = 'Carregando...';
+      const [p, v] = await Promise.all([
+        sb.rpc('painel_pacientes', { p_fim: fim }),
+        sb.rpc('painel_visitas', { p_ini: ini, p_fim: fim }),
       ]);
-      if ([p, s, c, v, d, us, ag, ci].some((r) => r.error)) $('erro').textContent = 'Não foi possível carregar alguns dados. Atualize a página.';
-      pacientes = (p.data || []).filter((x) => !x.excluido_em);
-      sens = new Map((s.data || []).map((x) => [x.paciente_id, x]));
-      com = c.data || [];
-      visitas = (v.data || []).filter((x) => !x.excluido_em);
-      designacoes = (d.data || []).filter((x) => x.ativa);
-      usuarios = new Map((us.data || []).map((x) => [x.id, x]));
-      agenda = ag.data || [];
-      cidade = ci.data || null;
+      if (p.error || v.error) { $('msg').textContent = 'Não foi possível carregar: ' + (p.error || v.error).message; return; }
+      pacientes = p.data || []; visitas = v.data || [];
+      $('msg').textContent = '';
+      calcular();
     }
 
-    // ---------- relatórios do master ----------
-    function relMaster(pac, vis) {
-      const ids = new Set(pac.map((p) => p.id));
-      const conc = vis.filter((v) => v.situacao === 'concluida');
-      const agd = vis.filter((v) => v.situacao === 'agendada');
-      const atend = new Set(conc.map((v) => v.paciente_id)).size;
-      const cont = (s) => pac.filter((p) => p.status === s).length;
-      const tempos = pac.filter((p) => p.data_inicio).map((p) => dias(p.data_inicio, p.data_obito || p.data_interrupcao || HOJE) / 30.44);
-      const tmed = tempos.length ? (tempos.reduce((a, b) => a + b, 0) / tempos.length).toFixed(1) : '0';
-      const media = atend ? (conc.length / atend).toFixed(1) : '0';
-      const N = cidade?.dias_sem_visita_alerta ?? 60;
-      const ultimo = ultimoPorPaciente(visitas);
-      const nomeP = new Map(pacientes.map((p) => [p.id, p.nome]));
-
-      const porP = new Map();
-      for (const v of vis) {
-        const u = usuarios.get(v.prestador_id);
-        const n = u ? u.nome : 'Desconhecido';
-        const r = porP.get(n) || { area: u?.area || '—', c: 0, g: 0 };
-        if (v.situacao === 'concluida') r.c++; else if (v.situacao === 'agendada') r.g++;
-        porP.set(n, r);
-      }
-
-      const idades = []; let semD = 0;
-      for (const p of pac) { const s = sens.get(p.id); if (s?.data_nascimento) idades.push(anos(s.data_nascimento)); else semD++; }
-      const faixas = faixasDe(idades); if (semD) faixas.push(['Não informado', semD]);
-
-      const comF = com.filter((c) => ids.has(c.paciente_id));
-      const semV = pac.filter((p) => p.status === 'ativo' && (!ultimo.get(p.id) || dias(ultimo.get(p.id), HOJE) >= N));
-      const prox = visitas.filter((v) => v.situacao === 'agendada' && v.data_visita >= HOJE && ids.has(v.paciente_id))
-        .sort((a, b) => a.data_visita.localeCompare(b.data_visita));
-
-      const kpis = kpi(pac.length, 'Pacientes') + kpi(cont('ativo'), 'Ativos') + kpi(cont('em_espera'), 'Em espera') +
-        kpi(cont('interrompido'), 'Interrompidos') + kpi(cont('falecido'), 'Falecidos') + kpi(conc.length, 'Visitas concluídas') +
-        kpi(agd.length, 'Visitas agendadas') + kpi(media, 'Visitas por paciente atendido') + kpi(tmed, 'Tempo médio (meses)');
-
-      const secoes = [
-        { id: 'sexo', titulo: 'Pacientes por sexo', cab: ['Sexo', 'Total'], linhas: contar(pac, (p) => (p.sexo ? SEXO[p.sexo] : 'Não informado')) },
-        { id: 'faixa', titulo: 'Faixa etária', cab: ['Faixa', 'Pacientes'], linhas: faixas },
-        { id: 'situacao', titulo: 'Pacientes por situação', cab: ['Situação', 'Total'], linhas: Object.entries(STATUS).map(([k, v]) => [v, cont(k)]) },
-        { id: 'bairro', titulo: 'Pacientes por bairro', cab: ['Bairro', 'Total'], linhas: contar(pac, (p) => p.bairro || 'Não informado') },
-        { id: 'esf', titulo: 'Pacientes por ESF', cab: ['ESF', 'Total'], linhas: contar(pac, (p) => p.esf || 'Não informado') },
-        { id: 'comorb', titulo: 'Pacientes por comorbidade', cab: ['Comorbidade', 'Total'], linhas: contar(comF, (c) => c.comorbidades?.nome || 'Não informado') },
-        { id: 'prest', titulo: 'Visitas por prestador (período)', cab: ['Prestador', 'Área', 'Concluídas', 'Agendadas'], linhas: [...porP.entries()].map(([n, r]) => [n, r.area, r.c, r.g]) },
-        { id: 'semvisita', titulo: `Ativos sem visita há ${N} dias ou mais`, cab: ['Paciente', 'Último atendimento'],
-          linhas: semV.map((p) => [linkPac(p.id, p.nome), ultimo.get(p.id) ? fmt(ultimo.get(p.id)) : 'Nunca']) },
-        { id: 'agenda', titulo: 'Próximas visitas agendadas', cab: ['Data', 'Paciente', 'Prestador'],
-          linhas: prox.map((v) => [fmt(v.data_visita), linkPac(v.paciente_id, nomeP.get(v.paciente_id)), usuarios.get(v.prestador_id)?.nome || '—']) },
-      ];
-      return { kpis, secoes };
+    async function prepararEquipe() {
+      const { data } = await sb.from('usuarios').select('id,nome,papel,area,sede_esf').order('nome');
+      usuarios = new Map((data || []).map((u) => [u.id, u]));
+      const profs = (data || []).filter((u) => u.papel === 'prestador');
+      $('prestador').innerHTML = '<option value="">Todos</option>' + profs.map((u) => `<option value="${u.id}">${esc(u.nome)}</option>`).join('');
+      const areas = [...new Set(profs.map((u) => u.area).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+      $('area').innerHTML = '<option value="">Todas</option>' + areas.map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
     }
 
-    // ---------- relatórios do profissional (só pacientes designados e as próprias visitas) ----------
-    function relProf(pac, vis) {
-      const ids = new Set(pac.map((p) => p.id));
-      const conc = vis.filter((v) => v.situacao === 'concluida');
-      const agd = vis.filter((v) => v.situacao === 'agendada');
-      const ultimo = ultimoPorPaciente(visitas.filter((v) => v.prestador_id === eu.id));
-      const N = cidade?.dias_sem_visita_alerta ?? 60;
-      const prox = (pid) => agenda.filter((a) => a.paciente_id === pid && a.situacao === 'agendada' && a.data_visita >= HOJE)
-        .map((a) => a.data_visita).sort()[0];
-      const nomeP = new Map(pac.map((p) => [p.id, p.nome]));
-      const agF = agenda.filter((a) => a.data_visita >= HOJE && ids.has(a.paciente_id))
-        .sort((a, b) => a.data_visita.localeCompare(b.data_visita));
+    $('aplicar').addEventListener('click', carregar);
+    ['prestador', 'area', 'situacao'].forEach((id) => $(id).addEventListener('change', () => { if (pacientes.length || visitas.length) calcular(); }));
+    $('sair').addEventListener('click', async () => { await sb.auth.signOut(); location.href = 'index.html'; });
 
-      const kpis = kpi(pac.length, 'Pacientes designados') + kpi(pac.filter((p) => p.status === 'ativo').length, 'Ativos') +
-        kpi(conc.length, 'Minhas visitas concluídas (período)') + kpi(agd.length, 'Minhas visitas agendadas (período)');
-
-      const idades = []; let semD = 0;
-      for (const p of pac) { const s = sens.get(p.id); if (s?.data_nascimento) idades.push(anos(s.data_nascimento)); else semD++; }
-      const faixas = faixasDe(idades); if (semD) faixas.push(['Não informado', semD]);
-
-      const semV = pac.filter((p) => p.status === 'ativo' && (!ultimo.get(p.id) || dias(ultimo.get(p.id), HOJE) >= N));
-
-      const secoes = [
-        { id: 'meus', titulo: 'Meus pacientes designados', cab: ['Paciente', 'Situação', 'Início', 'Minha última visita', 'Próxima visita'],
-          linhas: pac.map((p) => [linkPac(p.id, p.nome), STATUS[p.status] || p.status, fmt(p.data_inicio), ultimo.get(p.id) ? fmt(ultimo.get(p.id)) : '—', prox(p.id) ? fmt(prox(p.id)) : '—']) },
-        { id: 'faixa', titulo: 'Faixa etária dos meus pacientes', cab: ['Faixa', 'Pacientes'], linhas: faixas },
-        { id: 'comorb', titulo: 'Comorbidades dos meus pacientes', cab: ['Comorbidade', 'Total'], linhas: contar(com.filter((c) => ids.has(c.paciente_id)), (c) => c.comorbidades?.nome || 'Não informado') },
-        { id: 'agenda', titulo: 'Agenda futura dos meus pacientes', cab: ['Data', 'Paciente', 'Quem atende', 'Situação'],
-          linhas: agF.map((a) => [fmt(a.data_visita), linkPac(a.paciente_id, nomeP.get(a.paciente_id)), a.prestador_id === eu.id ? 'Você' : 'Outro profissional', a.situacao]) },
-        { id: 'semvisita', titulo: `Meus ativos sem visita há ${N} dias ou mais`, cab: ['Paciente', 'Minha última visita'],
-          linhas: semV.map((p) => [linkPac(p.id, p.nome), ultimo.get(p.id) ? fmt(ultimo.get(p.id)) : 'Nunca']) },
-      ];
-      return { kpis, secoes };
-    }
-
-    // ---------- render ----------
-    function render() {
-      const f = {
-        de: $('f-de').value, ate: $('f-ate').value, sit: $('f-sit').value,
-        prest: eu.papel === 'master' ? ($('f-prest').value || null) : eu.id,
-      };
-      const base = eu.papel === 'master'
-        ? new Set(pacientes.map((p) => p.id))
-        : new Set(designacoes.filter((d) => d.usuario_id === eu.id).map((d) => d.paciente_id));
-      const pac = pacientes.filter((p) => base.has(p.id) &&
-        (f.sit === 'todas' || p.status === f.sit) &&
-        (eu.papel !== 'master' || !f.prest || designacoes.some((d) => d.usuario_id === f.prest && d.paciente_id === p.id)));
-      const idsPac = new Set(pac.map((p) => p.id));
-      const vis = visitas.filter((v) => v.data_visita >= f.de && v.data_visita <= f.ate &&
-        (eu.papel === 'master'
-          ? idsPac.has(v.paciente_id) && (!f.prest || v.prestador_id === f.prest)
-          : v.prestador_id === eu.id));
-
-      const r = eu.papel === 'master' ? relMaster(pac, vis) : relProf(pac, vis);
-      SECOES = r.secoes;
-      $('kpis').innerHTML = `<div class="cards">${r.kpis}</div>`;
-      $('grade').innerHTML = SECOES.map((s, i) =>
-        `<section class="card clicavel" data-i="${i}"><h2>${esc(s.titulo)}</h2>${tabela(s.cab, s.linhas.slice(0, 5))}` +
-        `<p class="rodape">${s.linhas.length > 5 ? `Mostrando 5 de ${s.linhas.length}. Clique para ver todos.` : 'Clique para ver detalhes.'}</p></section>`).join('');
-      $('impressao').innerHTML = SECOES.map((s) =>
-        `<div data-secao="${s.id}" data-titulo="${esc(s.titulo)}"><h3>${esc(s.titulo)}</h3>${tabela(s.cab, s.linhas)}</div>`).join('');
-      $('checks').innerHTML = SECOES.map((s) =>
-        `<label style="display:inline-flex;gap:4px;margin-right:10px"><input type="checkbox" checked data-alvo="${s.id}"> ${esc(s.titulo)}</label>`).join('');
-      cabecalho(f);
-    }
-
-    function cabecalho(f) {
-      const sit = f.sit === 'todas' ? 'Todas' : STATUS[f.sit];
-      const pr = f.prest ? (usuarios.get(f.prest)?.nome || '—') : 'Todos';
-      $('cabecalho-impressao').innerHTML =
-        `<strong>Projeto Finito: relatório${cidade ? ' · ' + esc(cidade.nome) : ''}</strong><br>` +
-        `Período: ${fmt(f.de)} a ${fmt(f.ate)} · Situação: ${esc(sit)} · Prestador: ${esc(pr)}<br>` +
-        `Gerado em ${new Date().toLocaleString('pt-BR')} por ${esc(eu.nome)} (${PAPEL[eu.papel]})`;
-    }
-
-    function exportar() {
-      document.querySelectorAll('#checks input').forEach((c) => {
-        const el = document.querySelector(`#impressao [data-secao="${c.dataset.alvo}"]`);
-        if (el) el.classList.toggle('oculto-impressao', !c.checked);
-      });
-      window.print();
-    }
-
-    // ---------- inicialização ----------
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
       if (!session) { location.href = 'index.html'; return; }
-      const { data: u } = await sb.from('usuarios').select('id,nome,papel,area,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
+      const { data: u } = await sb.from('usuarios').select('id,nome,papel,sede_esf').eq('auth_uid', session.user.id).maybeSingle();
       if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
       eu = u;
-      $('nome').textContent = eu.nome;
-
-      const btn = $('btn-acao');
-      if (eu.papel === 'master') {
-        btn.textContent = 'Cadastrar paciente'; btn.href = 'cadastrar-paciente.html';
-        $('btn-prof').hidden = false;
-      } else {
-        btn.textContent = 'Agendar visita'; btn.href = 'agendar-visita.html';
-      }
-      btn.hidden = false;
-
-      const ini = new Date(); ini.setDate(ini.getDate() - 365);
-      $('f-de').value = ini.toISOString().slice(0, 10);
-      $('f-ate').value = HOJE;
-      $('f-sit').innerHTML = '<option value="todas">Todas</option>' +
-        Object.entries(STATUS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
-
+      $('nome').textContent = u.nome;
+      $('papel-txt').textContent = u.papel === 'master' ? 'Master' : u.papel === 'esf' ? `ESF · sede ${u.sede_esf}` : 'Profissional';
+      const gestor = u.papel === 'master' || u.papel === 'esf';
+      $('lk-paciente').hidden = u.papel !== 'master';
+      $('lk-acesso').hidden = u.papel !== 'master';
+      $('lk-agendar').hidden = u.papel !== 'prestador';
+      $('f-prest').hidden = !gestor;
+      $('f-area').hidden = !gestor;
+      hoje = hojeLocal();
+      const d = new Date(); ini = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`; fim = hoje;
+      $('ini').value = ini; $('fim').value = fim;
+      await prepararEquipe();
       await carregar();
-
-      if (eu.papel === 'master') {
-        $('lbl-prest').hidden = false;
-        $('f-prest').innerHTML = '<option value="">Todos</option>' +
-          [...usuarios.values()].filter((x) => x.papel === 'prestador')
-            .map((x) => `<option value="${x.id}">${esc(x.nome)}</option>`).join('');
-      }
-
-      $('aplicar').onclick = render;
-      $('pdf').onclick = exportar;
-      $('sair').onclick = async () => { await sb.auth.signOut(); location.href = 'index.html'; };
-      $('fechar').onclick = () => $('detalhe').close();
-      $('grade').addEventListener('click', (e) => {
-        if (e.target.closest('a')) return;
-        const c = e.target.closest('.clicavel');
-        if (!c) return;
-        const s = SECOES[Number(c.dataset.i)];
-        $('detalhe-corpo').innerHTML = `<h2>${esc(s.titulo)}</h2>${tabela(s.cab, s.linhas)}`;
-        $('detalhe').showModal();
-      });
-      render();
     })();
   </script>
 </body>
