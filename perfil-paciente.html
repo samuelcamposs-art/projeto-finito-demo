@@ -16,8 +16,10 @@
     .usuario { text-align:right; font-size:.95rem; font-weight:600; color:var(--roxo); }
     .linkbtn { color:var(--roxo); text-decoration:underline; font-weight:500; font-size:.9rem; }
     .btn { padding:9px 16px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-weight:600; cursor:pointer; font-size:.95rem; }
+    .btn-sec { background:var(--roxo); }
     main { max-width:960px; margin:20px auto; padding:0 16px 40px; }
     .cabeca { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+    .cabeca .botoes { display:flex; gap:8px; flex-wrap:wrap; }
     h1 { font-size:1.4rem; color:var(--roxo); margin:0; }
     .grade { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; }
     .card { background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.06); }
@@ -32,11 +34,28 @@
     .vazio { color:#888; font-size:.88rem; }
     .aviso { background:#fff; padding:24px; border-radius:12px; text-align:center; }
     .restrito { color:#7b7880; font-size:.9rem; font-style:italic; }
-    dialog { border:0; border-radius:12px; padding:20px; width:min(760px,94vw); max-height:86vh; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+    .sub { margin:12px 0 4px; font-size:.9rem; }
+    dialog { border:0; border-radius:12px; padding:20px; width:min(760px,94vw); max-height:88vh; overflow:auto; box-shadow:0 10px 40px rgba(0,0,0,.25); }
     dialog::backdrop { background:rgba(59,58,64,.5); }
     dialog h2 { color:var(--roxo); margin-top:0; }
     .area-titulo { color:var(--roxo); font-weight:600; margin:14px 0 6px; font-size:.95rem; }
     ul.lista { margin:0; padding-left:18px; font-size:.92rem; }
+    form.editar label { display:block; font-size:.9rem; margin-bottom:10px; }
+    form.editar input, form.editar select, form.editar textarea { display:block; width:100%; margin-top:4px; padding:8px; border:1px solid #cfc9c5; border-radius:6px; font-size:.95rem; font-family:inherit; }
+    .duplo { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .comchk { display:block; font-weight:normal; font-size:.9rem; margin:3px 0; }
+    .comchk input { display:inline; width:auto; margin-right:6px; }
+    .msg { color:#7a2030; font-size:.9rem; min-height:1.2em; }
+    .btn-cancel { background:#9a9aa6; }
+    #ficha { display:none; }
+    @media print {
+      body > *:not(#ficha) { display:none !important; }
+      #ficha { display:block; font-size:12px; }
+      #ficha h2 { font-size:14px; color:#000; margin:14px 0 6px; border-bottom:1px solid #999; }
+      #ficha h1 { font-size:18px; color:#000; margin:0 0 4px; }
+      #ficha table { font-size:11px; }
+      #ficha dl.kv { grid-template-columns:140px 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -56,7 +75,11 @@
     <div id="conteudo" hidden>
       <div class="cabeca">
         <h1 id="titulo"></h1>
-        <button class="btn" id="btn-clinico">Dados clínicos</button>
+        <div class="botoes">
+          <button class="btn" id="btn-clinico">Dados clínicos</button>
+          <button class="btn btn-sec" id="btn-ficha">Imprimir ficha (PDF)</button>
+          <button class="btn" id="btn-editar" hidden>Editar perfil</button>
+        </div>
       </div>
 
       <div class="grade">
@@ -64,22 +87,18 @@
           <h2>Identificação</h2>
           <dl class="kv" id="ident"></dl>
         </section>
-
         <section class="card">
           <h2>Situação</h2>
           <dl class="kv" id="situacao"></dl>
         </section>
-
         <section class="card">
           <h2>Contatos</h2>
           <div id="contatos"></div>
         </section>
-
         <section class="card">
           <h2>Acompanhamento</h2>
           <div id="acompanhamento"></div>
         </section>
-
         <section class="card largo">
           <h2>Visitas futuras agendadas</h2>
           <div id="futuras"></div>
@@ -88,15 +107,70 @@
     </div>
   </main>
 
+  <!-- Dados clínicos -->
   <dialog id="clinico">
     <h2>Dados clínicos</h2>
     <div id="clinico-corpo"></div>
     <p style="text-align:right"><button class="btn" id="fechar-clinico">Fechar</button></p>
   </dialog>
 
+  <!-- Edição (somente master) -->
+  <dialog id="editar">
+    <h2>Editar perfil</h2>
+    <form class="editar" id="form-editar">
+      <label>Nome completo *<input id="e-nome" required></label>
+      <div class="duplo">
+        <label>Sexo *
+          <select id="e-sexo" required>
+            <option value="feminino">Feminino</option>
+            <option value="masculino">Masculino</option>
+            <option value="nao_informado">Não informado</option>
+          </select>
+        </label>
+        <label>Data de nascimento<input type="date" id="e-nasc"></label>
+      </div>
+      <div class="duplo">
+        <label>Bairro *<input id="e-bairro" required></label>
+        <label>ESF *<input id="e-esf" required></label>
+      </div>
+      <label>Endereço<input id="e-endereco"></label>
+
+      <p class="sub"><strong>Contato principal</strong></p>
+      <div class="duplo">
+        <label>Nome *<input id="e-cont-nome" required></label>
+        <label>Parentesco<input id="e-cont-par"></label>
+      </div>
+      <label>Telefone *<input id="e-cont-tel" required></label>
+      <label>Contatos adicionais (uma linha por contato: nome | parentesco | telefone)
+        <textarea id="e-cont-add" rows="3"></textarea>
+      </label>
+
+      <p class="sub"><strong>Comorbidades</strong></p>
+      <div id="e-coms"></div>
+
+      <p class="sub"><strong>Situação</strong></p>
+      <div class="duplo">
+        <label>Data de interrupção<input type="date" id="e-int"></label>
+        <label>Motivo da interrupção<input id="e-motivo"></label>
+      </div>
+      <label>Data de óbito<input type="date" id="e-obito"></label>
+
+      <label>Observação<textarea id="e-obs" rows="2"></textarea></label>
+
+      <p class="msg" id="e-msg"></p>
+      <p style="text-align:right;margin-top:12px">
+        <button type="button" class="btn btn-cancel" id="e-cancelar">Cancelar</button>
+        <button type="submit" class="btn">Salvar alterações</button>
+      </p>
+    </form>
+  </dialog>
+
+  <!-- Ficha para impressão (aparece só na impressão) -->
+  <div id="ficha"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
-    // Chave pública (publishable). O RLS do banco define o que cada conta pode ver deste paciente.
+    // Chave pública (publishable). O RLS do banco define o que cada conta pode ver e alterar neste paciente.
     const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
 
     const $ = (id) => document.getElementById(id);
@@ -111,103 +185,205 @@
       ? `<table><tr>${cab.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${linhas.map((l) => `<tr>${l.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table>`
       : '<p class="vazio">Nenhum registro.</p>';
 
-    const aviso = (msg) => { $('aviso-erro').textContent = msg; $('aviso-erro').hidden = false; };
+    let me = null, P = null, S = null, COMS_LISTA = [], COMS_PAC = [], DES = [], VIS = [], USU = new Map(), FUTURAS = [];
 
-    (async () => {
+    function aviso(msg) { $('aviso-erro').textContent = msg; $('aviso-erro').hidden = false; }
+
+    async function carregar() {
       const { data: { session } } = await sb.auth.getSession();
-      if (!session) { location.href = 'index.html'; return; }
-      const { data: me } = await sb.from('usuarios').select('id,nome,papel,area').eq('auth_uid', session.user.id).maybeSingle();
-      if (!me) { await sb.auth.signOut(); location.href = 'index.html'; return; }
+      if (!session) { location.href = 'index.html'; return false; }
+      const { data: u } = await sb.from('usuarios').select('id,nome,papel,area').eq('auth_uid', session.user.id).maybeSingle();
+      if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return false; }
+      me = u;
       $('nome').textContent = me.nome;
 
       const id = new URLSearchParams(location.search).get('id');
-      if (!id) return aviso('Paciente não informado.');
+      if (!id) { aviso('Paciente não informado.'); return false; }
 
       const { data: p } = await sb.from('pacientes').select('*').eq('id', id).maybeSingle();
-      if (!p || p.excluido_em) return aviso('Paciente não encontrado ou você não tem acesso a ele.');
+      if (!p || p.excluido_em) { aviso('Paciente não encontrado ou você não tem acesso a ele.'); return false; }
+      P = p;
 
-      const [s, c, d, us, vis, ag] = await Promise.all([
+      const [s, c, cl, d, us, vis, ag] = await Promise.all([
         sb.from('pacientes_sensiveis').select('*').eq('paciente_id', id).maybeSingle(),
-        sb.from('paciente_comorbidades').select('principal,comorbidades(nome)').eq('paciente_id', id),
+        sb.from('paciente_comorbidades').select('principal,comorbidade_id,comorbidades(nome)').eq('paciente_id', id).is('excluido_em', null),
+        sb.from('comorbidades').select('id,nome').order('nome'),
         sb.from('designacoes').select('ativa,usuario_id,usuarios(nome,area)').eq('paciente_id', id),
         sb.from('usuarios').select('id,nome,area'),
-        sb.from('visitas').select('id,data_visita,situacao,prestador_id,excluido_em').eq('paciente_id', id),
+        sb.from('visitas').select('id,data_visita,situacao,prestador_id,observacao,excluido_em').eq('paciente_id', id),
         sb.from('agenda_designada').select('data_visita,situacao,prestador_id').eq('paciente_id', id),
       ]);
-      const sens = s.data, coms = c.data || [], designs = (d.data || []).filter((x) => x.ativa);
-      const usuarios = new Map((us.data || []).map((x) => [x.id, x]));
-      const visitas = (vis.data || []).filter((x) => !x.excluido_em);
+      S = s.data;
+      COMS_PAC = c.data || [];
+      COMS_LISTA = cl.data || [];
+      DES = (d.data || []).filter((x) => x.ativa);
+      USU = new Map((us.data || []).map((x) => [x.id, x]));
+      VIS = (vis.data || []).filter((x) => !x.excluido_em);
+      FUTURAS = me.papel === 'master'
+        ? VIS.filter((x) => x.situacao === 'agendada' && x.data_visita >= HOJE)
+            .map((x) => ({ data: x.data_visita, quem: USU.get(x.prestador_id)?.nome || '—' }))
+        : (ag.data || []).filter((x) => x.situacao === 'agendada' && x.data_visita >= HOJE)
+            .map((x) => ({ data: x.data_visita, quem: x.prestador_id === me.id ? 'Você' : 'Outro profissional' }));
+      return true;
+    }
+
+    function render() {
+      $('titulo').textContent = P.nome;
       const ehMaster = me.papel === 'master';
+      $('btn-editar').hidden = !ehMaster;
 
-      // Situação e identificação
-      $('titulo').textContent = p.nome;
+      // Identificação: Bairro, Endereço, ESF (sem número de cadastro)
       $('ident').innerHTML = kv([
-        ['Número', p.numero], ['Sexo', p.sexo ? SEXO[p.sexo] : '—'],
-        ['Data de nascimento', sens?.data_nascimento ? `${fmt(sens.data_nascimento)} (${idade(sens.data_nascimento)} anos)` : (sens ? 'Não informada' : 'Restrito')],
-        ['Bairro', p.bairro || '—'], ['ESF', p.esf || '—'], ['Endereço', sens?.endereco || (sens ? '—' : 'Restrito')],
+        ['Bairro', P.bairro], ['Endereço', S ? (S.endereco || '—') : 'Restrito'], ['ESF', P.esf],
+        ['Sexo', P.sexo ? SEXO[P.sexo] : '—'],
+        ['Nascimento', S?.data_nascimento ? `${fmt(S.data_nascimento)} (${idade(S.data_nascimento)} anos)` : (S ? 'Não informado' : 'Restrito')],
       ]);
+
       $('situacao').innerHTML = kv([
-        ['Status', STATUS[p.status] || p.status], ['Início', fmt(p.data_inicio)],
-        ['Interrupção', p.data_interrupcao ? `${fmt(p.data_interrupcao)} · ${p.motivo_interrupcao || ''}` : '—'],
-        ['Óbito', fmt(p.data_obito)], ['Cadastro', p.dados_incompletos ? 'Dados incompletos (importado)' : 'Completo'],
-        ['Observação', sens?.observacao || '—'],
+        ['Status', STATUS[P.status] || P.status], ['Início', fmt(P.data_inicio)],
+        ['Interrupção', P.data_interrupcao ? `${fmt(P.data_interrupcao)} · ${P.motivo_interrupcao || ''}` : '—'],
+        ['Óbito', fmt(P.data_obito)],
+        ['Cadastro', P.dados_incompletos ? 'Dados incompletos (importado)' : 'Completo'],
+        ['Observação', S?.observacao || '—'],
       ]);
 
-      // Contatos (dados sensíveis)
-      if (!sens) {
-        $('contatos').innerHTML = '<p class="restrito">Dados de contato restritos ao master e aos profissionais designados.</p>';
-      } else {
-        const adic = (sens.contatos_adicionais || []).map((x) =>
-          `<li>${esc(x.nome || x.texto || '')}${x.parentesco ? ' · ' + esc(x.parentesco) : ''}${x.telefone ? ' · ' + esc(x.telefone) : ''}</li>`).join('');
-        $('contatos').innerHTML = `<dl class="kv">${kv([
-          ['Principal', sens.contato_principal_nome], ['Parentesco', sens.contato_principal_parentesco],
-          ['Telefone', sens.contato_principal_telefone],
-        ])}</dl>` + (adic ? `<p style="margin:12px 0 4px;font-size:.9rem"><strong>Adicionais</strong></p><ul class="lista">${adic}</ul>` : '');
-      }
+      $('contatos').innerHTML = S
+        ? `<dl class="kv">${kv([['Principal', S.contato_principal_nome], ['Parentesco', S.contato_principal_parentesco], ['Telefone', S.contato_principal_telefone]])}</dl>` + contatosAdicionais(S)
+        : '<p class="restrito">Dados de contato restritos ao master e aos profissionais designados.</p>';
 
-      // Acompanhamento
-      const ultimo = visitas.filter((x) => x.situacao === 'concluida').map((x) => x.data_visita).sort().pop();
+      const ultimo = VIS.filter((x) => x.situacao === 'concluida').map((x) => x.data_visita).sort().pop();
       $('acompanhamento').innerHTML = `<dl class="kv">${kv([['Último atendimento', ultimo ? fmt(ultimo) : 'Nenhum']])}</dl>` +
-        `<p style="margin:12px 0 4px;font-size:.9rem"><strong>Profissionais designados</strong></p>` +
-        (designs.length
-          ? `<ul class="lista">${designs.map((x) => `<li>${esc(x.usuarios?.nome || '—')} (${esc(x.usuarios?.area || '—')})</li>`).join('')}</ul>`
+        '<p class="sub"><strong>Profissionais designados</strong></p>' +
+        (DES.length
+          ? `<ul class="lista">${DES.map((x) => `<li>${esc(x.usuarios?.nome || '—')} (${esc(x.usuarios?.area || '—')})</li>`).join('')}</ul>`
           : '<p class="vazio">Nenhum profissional designado.</p>');
 
-      // Visitas futuras agendadas
-      let futuras;
-      if (ehMaster) {
-        futuras = visitas.filter((x) => x.situacao === 'agendada' && x.data_visita >= HOJE)
-          .sort((a, b) => a.data_visita.localeCompare(b.data_visita))
-          .map((x) => [fmt(x.data_visita), usuarios.get(x.prestador_id)?.nome || '—', 'Agendada']);
-      } else {
-        futuras = (ag.data || []).filter((x) => x.situacao === 'agendada' && x.data_visita >= HOJE)
-          .sort((a, b) => a.data_visita.localeCompare(b.data_visita))
-          .map((x) => [fmt(x.data_visita), x.prestador_id === me.id ? 'Você' : 'Outro profissional', 'Agendada']);
-      }
-      $('futuras').innerHTML = tab(['Data', 'Quem atende', 'Situação'], futuras);
+      $('futuras').innerHTML = tab(['Data', 'Quem atende', 'Situação'],
+        FUTURAS.sort((a, b) => a.data.localeCompare(b.data)).map((x) => [fmt(x.data), x.quem, 'Agendada']));
 
-      // Dados clínicos (abre em caixa): comorbidades e visitas realizadas por área
-      const realizadas = visitas.filter((x) => x.situacao === 'concluida');
+      // Dados clínicos: comorbidades e visitas realizadas por área
+      const realizadas = VIS.filter((x) => x.situacao === 'concluida');
       const porArea = new Map();
       for (const x of realizadas) {
-        const area = usuarios.get(x.prestador_id)?.area || '—';
+        const area = USU.get(x.prestador_id)?.area || '—';
         if (!porArea.has(area)) porArea.set(area, []);
-        porArea.get(area).push([fmt(x.data_visita), usuarios.get(x.prestador_id)?.nome || '—']);
+        porArea.get(area).push([fmt(x.data_visita), USU.get(x.prestador_id)?.nome || '—']);
       }
-      $('clinico-corpo').innerHTML =
-        `<p class="area-titulo">Comorbidades</p>` +
-        (coms.length ? `<ul class="lista">${coms.map((x) => `<li>${esc(x.comorbidades?.nome || '—')}${x.principal ? ' (principal)' : ''}</li>`).join('')}</ul>` : '<p class="vazio">Nenhuma comorbidade.</p>') +
-        `<p class="area-titulo">Visitas realizadas por área</p>` +
+      $('clinico-corpo').innerHTML = comorbidadesHtml() +
+        '<p class="area-titulo">Visitas realizadas por área</p>' +
         (porArea.size
           ? [...porArea.entries()].map(([area, linhas]) =>
               `<p class="area-titulo">${esc(area)}</p>${tab(['Data', 'Profissional'], linhas.sort((a, b) => b[0].localeCompare(a[0])))}`).join('')
           : '<p class="vazio">Nenhuma visita realizada.</p>');
 
+      // Ficha para impressão
+      const visitasRealizadas = realizadas.slice().sort((a, b) => b.data_visita.localeCompare(a.data_visita))
+        .map((x) => [fmt(x.data_visita), USU.get(x.prestador_id)?.nome || '—', x.observacao || '—']);
+      $('ficha').innerHTML =
+        `<h1>${esc(P.nome)}</h1><p>Ficha do paciente · impresso em ${new Date().toLocaleString('pt-BR')} por ${esc(me.nome)}</p>` +
+        '<h2>Identificação</h2><dl class="kv">' + $('ident').innerHTML + '</dl>' +
+        '<h2>Situação</h2><dl class="kv">' + $('situacao').innerHTML + '</dl>' +
+        '<h2>Contatos</h2>' + (S
+          ? '<dl class="kv">' + kv([['Principal', S.contato_principal_nome], ['Parentesco', S.contato_principal_parentesco], ['Telefone', S.contato_principal_telefone]]) + '</dl>' + contatosAdicionais(S)
+          : '<p>Restrito</p>') +
+        '<h2>Acompanhamento</h2><dl class="kv">' + kv([['Último atendimento', ultimo ? fmt(ultimo) : 'Nenhum']]) + '</dl>' +
+        '<p><strong>Profissionais designados:</strong> ' + (DES.map((x) => `${esc(x.usuarios?.nome || '—')} (${esc(x.usuarios?.area || '—')})`).join('; ') || 'Nenhum') + '</p>' +
+        '<h2>Comorbidades</h2>' + (COMS_PAC.length ? '<ul>' + COMS_PAC.map((x) => `<li>${esc(x.comorbidades?.nome || '—')}</li>`).join('') + '</ul>' : '<p>Nenhuma</p>') +
+        '<h2>Visitas realizadas</h2>' + tab(['Data', 'Profissional', 'Observação'], visitasRealizadas);
+
       $('conteudo').hidden = false;
-    })();
+    }
+
+    function contatosAdicionais(s) {
+      const lista = (s.contatos_adicionais || []).map((x) =>
+        `<li>${esc(x.nome || x.texto || '')}${x.parentesco ? ' · ' + esc(x.parentesco) : ''}${x.telefone ? ' · ' + esc(x.telefone) : ''}</li>`).join('');
+      return lista ? `<p class="sub"><strong>Adicionais</strong></p><ul class="lista">${lista}</ul>` : '';
+    }
+
+    function comorbidadesHtml() {
+      return '<p class="area-titulo">Comorbidades</p>' +
+        (COMS_PAC.length
+          ? `<ul class="lista">${COMS_PAC.map((x) => `<li>${esc(x.comorbidades?.nome || '—')}</li>`).join('')}</ul>`
+          : '<p class="vazio">Nenhuma comorbidade.</p>');
+    }
+
+    // ---------- edição (master) ----------
+    function abrirEditor() {
+      $('e-nome').value = P.nome;
+      $('e-sexo').value = P.sexo || 'nao_informado';
+      $('e-nasc').value = S?.data_nascimento || '';
+      $('e-bairro').value = P.bairro || '';
+      $('e-esf').value = P.esf || '';
+      $('e-endereco').value = S?.endereco || '';
+      $('e-cont-nome').value = S?.contato_principal_nome || '';
+      $('e-cont-par').value = S?.contato_principal_parentesco || '';
+      $('e-cont-tel').value = S?.contato_principal_telefone || '';
+      $('e-cont-add').value = (S?.contatos_adicionais || []).map((x) => [x.nome || x.texto || '', x.parentesco || '', x.telefone || ''].join(' | ')).join('\n');
+      const ativas = new Set(COMS_PAC.map((x) => x.comorbidade_id));
+      $('e-coms').innerHTML = COMS_LISTA.map((c) =>
+        `<label class="comchk"><input type="checkbox" class="com-chk" value="${c.id}" ${ativas.has(c.id) ? 'checked' : ''}> ${esc(c.nome)}</label>`).join('');
+      $('e-int').value = P.data_interrupcao || '';
+      $('e-motivo').value = P.motivo_interrupcao || '';
+      $('e-obito').value = P.data_obito || '';
+      $('e-obs').value = S?.observacao || '';
+      $('e-msg').textContent = '';
+      $('editar').showModal();
+    }
+
+    $('btn-editar').addEventListener('click', abrirEditor);
+    $('e-cancelar').addEventListener('click', () => $('editar').close());
+
+    $('form-editar').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const m = $('e-msg');
+      const dInt = $('e-int').value || null, motivo = $('e-motivo').value.trim() || null, dObito = $('e-obito').value || null;
+      if (motivo && !dInt) { m.textContent = 'Informe a data da interrupção para registrar o motivo.'; return; }
+      m.textContent = 'Salvando...';
+      try {
+        const { error: e1 } = await sb.from('pacientes').update({
+          nome: $('e-nome').value.trim(), sexo: $('e-sexo').value, bairro: $('e-bairro').value.trim(), esf: $('e-esf').value.trim(),
+          data_interrupcao: dInt, motivo_interrupcao: dInt ? motivo : null, data_obito: dObito,
+        }).eq('id', P.id);
+        if (e1) throw new Error('Dados do paciente: ' + e1.message);
+
+        const contatos = $('e-cont-add').value.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
+          const [nome = '', parentesco = '', telefone = ''] = l.split('|').map((x) => x.trim());
+          return { nome, parentesco, telefone };
+        });
+        const { error: e2 } = await sb.from('pacientes_sensiveis').update({
+          data_nascimento: $('e-nasc').value || null, endereco: $('e-endereco').value.trim() || null,
+          contato_principal_nome: $('e-cont-nome').value.trim(), contato_principal_parentesco: $('e-cont-par').value.trim() || null,
+          contato_principal_telefone: $('e-cont-tel').value.trim(), contatos_adicionais: contatos,
+          observacao: $('e-obs').value.trim() || null,
+        }).eq('paciente_id', P.id);
+        if (e2) throw new Error('Dados pessoais: ' + e2.message);
+
+        // Comorbidades: remove (exclusão lógica) as desmarcadas e inclui as novas
+        const marcadas = new Set([...document.querySelectorAll('.com-chk:checked')].map((c) => c.value));
+        const ativas = new Set(COMS_PAC.map((x) => x.comorbidade_id));
+        const remover = [...ativas].filter((id) => !marcadas.has(id));
+        const incluir = [...marcadas].filter((id) => !ativas.has(id));
+        if (remover.length) {
+          const { error: e3 } = await sb.from('paciente_comorbidades').update({ excluido_em: new Date().toISOString() })
+            .eq('paciente_id', P.id).in('comorbidade_id', remover).is('excluido_em', null);
+          if (e3) throw new Error('Comorbidades: ' + e3.message);
+        }
+        if (incluir.length) {
+          const { error: e4 } = await sb.from('paciente_comorbidades').insert(
+            incluir.map((id) => ({ cidade_id: me.cidade_id, paciente_id: P.id, comorbidade_id: id, principal: false })));
+          if (e4) throw new Error('Comorbidades: ' + e4.message);
+        }
+        location.reload();
+      } catch (err) { m.textContent = err.message; }
+    });
 
     $('btn-clinico').addEventListener('click', () => $('clinico').showModal());
     $('fechar-clinico').addEventListener('click', () => $('clinico').close());
+    $('btn-ficha').addEventListener('click', () => window.print());
+
+    (async () => {
+      if (await carregar()) render();
+    })();
   </script>
 </body>
 </html>
