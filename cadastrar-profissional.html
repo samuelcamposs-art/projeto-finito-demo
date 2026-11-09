@@ -102,6 +102,15 @@
 
   <dialog id="contas">
     <h2>Contas de acesso já cadastradas</h2>
+    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <input id="busca-conta" placeholder="Buscar por nome ou e-mail" style="flex:1;min-width:200px;margin-top:0">
+      <select id="filtro-conta" style="width:auto;margin-top:0">
+        <option value="">Todos os acessos</option>
+        <option value="ativo">Ativos</option>
+        <option value="pendente">Aguardando 1º acesso</option>
+        <option value="desativado">Desativados</option>
+      </select>
+    </div>
     <div id="contas-corpo"></div>
     <div id="link-box" hidden style="margin-top:14px;padding:12px;background:var(--cinza);border-radius:8px">
       <p style="margin:0 0 6px;font-size:.9rem">Link para definir a senha de <strong id="link-nome"></strong>:</p>
@@ -190,12 +199,27 @@
     });
 
     // Contas de acesso
+    let CONTAS = [];
     async function carregarContas() {
       const { data, error } = await sb.rpc('listar_contas');
       if (error) { $('contas-corpo').innerHTML = `<p class="vazio">${esc(error.message)}</p>`; return; }
-      if (!data?.length) { $('contas-corpo').innerHTML = '<p class="vazio">Nenhuma conta cadastrada.</p>'; return; }
+      CONTAS = data || [];
+      desenharContas();
+    }
+
+    function desenharContas() {
+      const q = $('busca-conta').value.trim().toLowerCase();
+      const f = $('filtro-conta').value;
+      if (!CONTAS.length) { $('contas-corpo').innerHTML = '<p class="vazio">Nenhuma conta cadastrada.</p>'; return; }
+      const data = CONTAS.filter((u) => {
+        const sit = !u.ativo ? 'desativado' : u.primeiro_acesso_feito ? 'ativo' : 'pendente';
+        if (f && sit !== f) return false;
+        if (!q) return true;
+        return (u.nome || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q);
+      });
+      if (!data.length) { $('contas-corpo').innerHTML = '<p class="vazio">Nenhuma conta encontrada com este filtro.</p>'; return; }
       $('contas-corpo').innerHTML = `<table>
-        <tr><th>Nome</th><th>Perfil</th><th>Área</th><th>Acesso</th><th></th></tr>` +
+        <tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Área</th><th>Acesso</th><th></th></tr>` +
         data.map((u) => {
           const eEu = u.id === eu.id;
           const acesso = !u.ativo ? '<span class="tag tag-off">Desativado</span>'
@@ -210,7 +234,7 @@
           } else {
             acoes = '<span class="cinza-txt">(sua conta)</span>';
           }
-          return `<tr><td>${esc(u.nome)}</td><td>${rotulo(u)}</td><td>${esc(areaTxt(u))}</td><td>${acesso}</td><td>${acoes}</td></tr>`;
+          return `<tr><td>${esc(u.nome)}</td><td>${esc(u.email)}</td><td>${rotulo(u)}</td><td>${esc(areaTxt(u))}</td><td>${acesso}</td><td>${acoes}</td></tr>`;
         }).join('') + '</table>';
     }
 
@@ -229,26 +253,30 @@
       const b = e.target.closest('[data-acao]');
       if (!b) return;
       const { acao, id, nome } = b.dataset;
-      if (acao === 'link') {
-        b.disabled = true;
-        const { data, error } = await sb.functions.invoke('reenviar-link', { body: { id } });
-        b.disabled = false;
-        if (error) { alert(await mensagemErro(error)); return; }
-        if (data?.erro) { alert(data.erro); return; }
-        $('link-nome').textContent = nome;
-        $('link-contas').value = data.link;
-        $('copiar-contas').textContent = 'Copiar';
-        $('link-box').hidden = false;
-        return;
-      }
+      if (acao === 'link') { b.disabled = true; await gerarLink(id, nome); b.disabled = false; return; }
       if (acao === 'desativar' || acao === 'reativar') {
         const ativar = acao === 'reativar';
         if (!ativar && !confirm(`Desativar o acesso de ${nome}? O login deixa de funcionar. O histórico continua visível ao master.`)) return;
         const { error } = await sb.from('usuarios').update({ ativo: ativar }).eq('id', id);
         if (error) { alert('Não foi possível alterar: ' + error.message); return; }
         await carregarContas();
+        // Ao reativar, o link de acesso fica disponível novamente
+        if (ativar) await gerarLink(id, nome);
       }
     });
+
+    async function gerarLink(id, nome) {
+      const { data, error } = await sb.functions.invoke('reenviar-link', { body: { id } });
+      if (error) { alert(await mensagemErro(error)); return; }
+      if (data?.erro) { alert(data.erro); return; }
+      $('link-nome').textContent = nome;
+      $('link-contas').value = data.link;
+      $('copiar-contas').textContent = 'Copiar';
+      $('link-box').hidden = false;
+    }
+
+    $('busca-conta').addEventListener('input', desenharContas);
+    $('filtro-conta').addEventListener('change', desenharContas);
 
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
