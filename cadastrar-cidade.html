@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projeto Finito: cidades</title>
+  <style>
+    [hidden] { display:none !important; }
+    :root { --verde:#6EA67F; --roxo:#9484B3; --azul:#BEDBE9; --cinza:#EAE6E3; --texto:#3B3A40; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--cinza); color:var(--texto); }
+    .banner { background:var(--roxo); color:#fff; text-align:center; padding:8px; font-weight:700; font-size:.85rem; letter-spacing:.04em; }
+    header.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 24px; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); flex-wrap:wrap; }
+    header.topo img { height:56px; }
+    .direita { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:flex-end; }
+    .usuario { text-align:right; font-size:.95rem; font-weight:600; color:var(--roxo); }
+    .linkbtn { background:transparent; border:0; color:var(--roxo); text-decoration:underline; font-weight:500; cursor:pointer; font-size:.9rem; padding:0; }
+    main { max-width:920px; margin:24px auto; padding:0 16px 40px; }
+    h1 { font-size:1.4rem; color:var(--roxo); margin:0 0 16px; }
+    h2 { font-size:1.05rem; color:var(--roxo); margin:32px 0 12px; }
+    .painel { background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.08); border-top:4px solid var(--azul); }
+    label.campo { display:block; font-size:.9rem; margin-bottom:14px; }
+    input { display:block; width:100%; margin-top:6px; padding:9px; border:1px solid #cfc9c5; border-radius:6px; font-size:1rem; background:#fff; font-family:inherit; }
+    .btn { padding:10px 18px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
+    .btn-pequeno { padding:6px 12px; font-size:.85rem; border-radius:6px; border:0; color:#fff; cursor:pointer; font-weight:600; }
+    .b-desativar { background:#9a3a4a; }
+    .b-reativar { background:var(--verde); }
+    .msg { min-height:1.2em; font-size:.9rem; margin-top:12px; }
+    .link-box { margin-top:14px; padding:12px; background:#f6f4f8; border-radius:8px; font-size:.9rem; }
+    .link-box textarea { width:100%; min-height:70px; font-size:.85rem; margin:6px 0; border:1px solid #cfc9c5; border-radius:6px; padding:8px; font-family:inherit; }
+    table { width:100%; border-collapse:collapse; font-size:.9rem; background:#fff; border-radius:8px; overflow:hidden; }
+    td, th { padding:8px; border-bottom:1px solid #eee; text-align:left; vertical-align:middle; }
+    th { color:var(--verde); }
+    .vazio { color:#888; font-size:.9rem; }
+    .nota { font-size:.85rem; color:#7b7880; margin-top:8px; }
+    @media (max-width:600px) { header.topo img { height:44px; } main { margin:16px auto; } }
+  </style>
+</head>
+<body>
+  <div class="banner">Cuidado Paliativo Multiprofissional</div>
+
+  <header class="topo">
+    <img src="logo.png" alt="Projeto Finito">
+    <div class="direita">
+      <div class="usuario" id="nome"></div>
+      <button class="linkbtn" id="sair">Sair</button>
+    </div>
+  </header>
+
+  <main>
+    <h1>Cadastrar cidade</h1>
+    <section class="painel">
+      <form id="form">
+        <label class="campo">Cidade *
+          <input id="cidade" required placeholder="Ex.: Cláudio">
+        </label>
+        <label class="campo">Nome do master *
+          <input id="nome-master" required>
+        </label>
+        <label class="campo">E-mail do master *
+          <input type="email" id="email" required>
+        </label>
+        <button class="btn" type="submit" id="cadastrar">Cadastrar cidade e criar acesso master</button>
+        <p class="msg" id="msg" role="alert"></p>
+      </form>
+      <div class="link-box" id="link-box" hidden>
+        <strong>Link para o master definir a senha</strong>
+        <textarea id="link" readonly></textarea>
+        <button class="btn-pequeno b-reativar" type="button" id="copiar">Copiar link</button>
+        <p class="nota">Envie este link ao master. Ele expira; se não for usado, gere outro pela recuperação de senha na tela de entrada.</p>
+      </div>
+    </section>
+
+    <h2>Cidades cadastradas</h2>
+    <p class="msg" id="msg-lista"></p>
+    <div id="lista"></div>
+    <p class="nota">Desativar uma cidade desativa todos os acessos vinculados a ela. Os dados são mantidos. Ao reativar, apenas o master volta a ficar ativo; os demais acessos continuam como estavam.</p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    // Chave pública (publishable). O acesso é controlado pelo RLS e pelas funções da plataforma.
+    const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    let CIDADES = [];
+
+    function desenharLista() {
+      if (!CIDADES.length) { $('lista').innerHTML = '<p class="vazio">Nenhuma cidade cadastrada.</p>'; return; }
+      $('lista').innerHTML = '<table><tr><th>Cidade</th><th>Master</th><th>E-mail</th><th>Acesso</th><th>Situação</th><th></th></tr>' +
+        CIDADES.map((c) =>
+          `<tr><td>${esc(c.nome)} (${esc(c.uf)})</td>` +
+          `<td>${esc(c.master_nome || '—')}</td>` +
+          `<td>${esc(c.master_email || '—')}</td>` +
+          `<td>${c.primeiro_acesso_feito ? 'Já acessou' : 'Aguardando primeiro acesso'}</td>` +
+          `<td>${c.ativa ? 'Ativa' : '<strong>Desativada</strong>'}</td>` +
+          `<td>${c.ativa
+            ? `<button class="btn-pequeno b-desativar" data-id="${c.id}" data-acao="desativar" data-nome="${esc(c.nome)}">Desativar</button>`
+            : `<button class="btn-pequeno b-reativar" data-id="${c.id}" data-acao="reativar" data-nome="${esc(c.nome)}">Reativar</button>`}</td></tr>`).join('') +
+        '</table>';
+    }
+
+    async function carregarCidades() {
+      const { data, error } = await sb.rpc('listar_cidades');
+      if (error) { $('msg-lista').textContent = 'Não foi possível carregar as cidades: ' + error.message; return; }
+      $('msg-lista').textContent = '';
+      CIDADES = data || [];
+      desenharLista();
+    }
+
+    $('lista').addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-acao]');
+      if (!b) return;
+      const ativar = b.dataset.acao === 'reativar';
+      const pergunta = ativar
+        ? `Reativar ${b.dataset.nome}? Apenas o master volta a ficar ativo; os demais acessos continuam como estavam.`
+        : `Desativar ${b.dataset.nome}? Todos os acessos da cidade serão desativados. Os dados serão mantidos.`;
+      if (!confirm(pergunta)) return;
+      const { error } = await sb.rpc('alterar_status_cidade', { p_cidade: b.dataset.id, p_ativa: ativar });
+      if (error) { $('msg-lista').textContent = 'Não foi possível alterar: ' + error.message; return; }
+      $('msg-lista').textContent = ativar ? 'Cidade reativada.' : 'Cidade desativada.';
+      await carregarCidades();
+    });
+
+    $('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const m = $('msg');
+      m.textContent = 'Cadastrando...';
+      $('link-box').hidden = true;
+      const { data, error } = await sb.functions.invoke('cadastrar-cidade', {
+        body: { cidade: $('cidade').value.trim(), nome: $('nome-master').value.trim(), email: $('email').value.trim() },
+      });
+      if (error) {
+        let texto = 'Não foi possível cadastrar a cidade.';
+        try { const j = await error.context.json(); texto = j.erro || texto; } catch (_) {}
+        m.textContent = texto;
+        return;
+      }
+      if (data?.link) {
+        $('link').value = data.link;
+        $('link-box').hidden = false;
+        m.textContent = data.aviso ? data.aviso : 'Cidade cadastrada. Envie o link ao master para ele definir a senha.';
+      } else {
+        m.textContent = data?.aviso || 'Cidade cadastrada.';
+      }
+      e.target.reset();
+      await carregarCidades();
+    });
+
+    $('copiar').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText($('link').value); $('copiar').textContent = 'Copiado'; }
+      catch (_) { $('link').select(); }
+    });
+
+    $('sair').addEventListener('click', async () => { await sb.auth.signOut(); location.href = 'index.html'; });
+
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { location.href = 'index.html'; return; }
+      const { data: u } = await sb.from('usuarios').select('nome,papel').eq('auth_uid', session.user.id).maybeSingle();
+      if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
+      if (u.papel !== 'plataforma') { location.href = 'dashboard.html'; return; }
+      $('nome').textContent = u.nome;
+      await carregarCidades();
+    })();
+  </script>
+</body>
+</html>
