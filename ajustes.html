@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projeto Finito: ajustes</title>
+  <style>
+    [hidden] { display:none !important; }
+    :root { --verde:#6EA67F; --roxo:#9484B3; --azul:#BEDBE9; --cinza:#EAE6E3; --texto:#3B3A40; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--cinza); color:var(--texto); }
+    .banner { background:var(--roxo); color:#fff; text-align:center; padding:8px; font-weight:700; font-size:.85rem; letter-spacing:.04em; }
+    header.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 24px; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); flex-wrap:wrap; }
+    header.topo img { height:56px; }
+    .direita { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:flex-end; }
+    .usuario { text-align:right; font-size:.95rem; font-weight:600; color:var(--roxo); }
+    .linkbtn { color:var(--roxo); text-decoration:underline; font-weight:500; font-size:.9rem; }
+    main { max-width:640px; margin:24px auto; padding:0 16px 40px; }
+    h1 { font-size:1.4rem; color:var(--roxo); }
+    .painel { background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.08); border-top:4px solid var(--azul); }
+    label { display:block; font-size:.9rem; margin-bottom:14px; }
+    .ajuda { display:block; font-size:.8rem; color:#6b6670; margin-top:4px; }
+    input { display:block; width:100%; margin-top:6px; padding:9px; border:1px solid #cfc9c5; border-radius:6px; font-size:1rem; background:#fff; font-family:inherit; }
+    .btn { width:100%; padding:11px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
+    .msg { min-height:1.2em; font-size:.9rem; margin-top:12px; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="banner">Cuidado Paliativo Multiprofissional</div>
+
+  <header class="topo">
+    <img src="logo.png" alt="Projeto Finito">
+    <div class="direita">
+      <a class="linkbtn" href="dashboard.html">Voltar ao painel</a>
+      <div class="usuario" id="nome"></div>
+    </div>
+  </header>
+
+  <main>
+    <h1>Ajustes da cidade</h1>
+    <div class="painel">
+      <form id="form">
+        <label>Dias sem visita para alertar (painel)
+          <input type="number" id="dias" min="1" step="1" required>
+          <span class="ajuda">Ativos sem visita há este número de dias ou mais aparecem na lista de alerta.</span>
+        </label>
+        <label>Evoluções guardadas por profissional e paciente
+          <input type="number" id="limite" min="1" step="1" required>
+          <span class="ajuda">Ao enviar uma evolução além deste número, a mais antiga deixa de ter imagem disponível. O registro permanece.</span>
+        </label>
+        <label>Prazo para cancelar exclusão de paciente (horas)
+          <input type="number" id="prazo" min="0" step="1" required>
+          <span class="ajuda">Depois deste prazo, o paciente excluído fica oculto nas telas e nos indicadores.</span>
+        </label>
+        <label>Área da primeira visita
+          <input id="area1" required>
+          <span class="ajuda">Área que faz a primeira visita de um paciente novo.</span>
+        </label>
+        <button class="btn" type="submit" id="salvar">Salvar ajustes</button>
+        <p class="msg" id="msg" role="alert"></p>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    // Chave pública (publishable). O banco permite a alteração somente ao master da cidade.
+    const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
+    const $ = (id) => document.getElementById(id);
+    let cidadeId = null;
+
+    $('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const m = $('msg');
+      const dias = Number($('dias').value), limite = Number($('limite').value), prazo = Number($('prazo').value);
+      if (!(dias >= 1) || !(limite >= 1) || !(prazo >= 0)) { m.textContent = 'Confira os valores informados.'; return; }
+      $('salvar').disabled = true;
+      m.textContent = 'Salvando...';
+      const { error } = await sb.from('cidades').update({
+        dias_sem_visita_alerta: dias, limite_evolucoes: limite, prazo_cancelamento_horas: prazo,
+        area_primeira_visita: $('area1').value.trim(),
+      }).eq('id', cidadeId);
+      $('salvar').disabled = false;
+      m.textContent = error ? 'Não foi possível salvar: ' + error.message : 'Ajustes salvos.';
+    });
+
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { location.href = 'index.html'; return; }
+      const { data: u } = await sb.from('usuarios').select('id,nome,papel,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
+      if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
+      if (u.papel !== 'master') { location.href = 'dashboard.html'; return; }
+      cidadeId = u.cidade_id;
+      $('nome').textContent = u.nome;
+      const { data: c, error } = await sb.from('cidades').select('dias_sem_visita_alerta,limite_evolucoes,prazo_cancelamento_horas,area_primeira_visita').eq('id', cidadeId).maybeSingle();
+      if (error || !c) { $('msg').textContent = 'Não foi possível carregar os ajustes.'; return; }
+      $('dias').value = c.dias_sem_visita_alerta;
+      $('limite').value = c.limite_evolucoes;
+      $('prazo').value = c.prazo_cancelamento_horas;
+      $('area1').value = c.area_primeira_visita || '';
+    })();
+  </script>
+</body>
+</html>
