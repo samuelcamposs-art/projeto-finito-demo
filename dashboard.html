@@ -29,7 +29,12 @@
     .card:hover { border-top-color:var(--verde); }
     .num { display:block; font-size:1.7rem; font-weight:700; color:var(--roxo); }
     .rot { font-size:.88rem; color:var(--texto); }
-    .listas { display:flex; flex-wrap:wrap; gap:8px; }
+    .listas { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:8px; }
+    .item-lista { display:flex; align-items:center; gap:8px; background:#fff; border-radius:8px; padding:6px 10px; }
+    .item-lista button { flex:1; text-align:left; }
+    .ajuda-lista { font-size:.85rem; color:#6b6670; margin:0 0 8px; }
+    .bloco-lista h3 { font-size:1rem; color:var(--roxo); margin:16px 0 6px; }
+    .bloco-lista { break-inside:auto; }
     .listas button { background:#fff; border:1px solid #cfc9c5; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:.9rem; font-family:inherit; color:var(--texto); }
     .listas button:hover { border-color:var(--verde); }
     .pac-link { color:var(--roxo); font-weight:600; text-decoration:underline; }
@@ -64,6 +69,7 @@
     <div class="direita">
       <a class="linkbtn" id="lk-paciente" href="cadastrar-paciente.html" hidden>Cadastrar paciente</a>
       <a class="linkbtn" id="lk-acesso" href="cadastrar-profissional.html" hidden>Cadastrar novo acesso</a>
+      <a class="linkbtn" id="lk-ajustes" href="ajustes.html" hidden>Ajustes</a>
       <a class="linkbtn" id="lk-agendar" href="agendar-visita.html" hidden>Agendar visita</a>
       <div class="usuario"><span id="nome"></span><div id="papel-txt" style="font-weight:400;font-size:.85rem"></div></div>
       <button class="linkbtn" id="sair">Sair</button>
@@ -111,19 +117,21 @@
     </section>
 
     <h2>Listas para consulta e impressão</h2>
+    <p class="ajuda-lista">Marque uma ou mais listas e use "Imprimir selecionadas", ou clique no nome para ver uma lista.</p>
     <section class="listas">
-      <button data-lista="sexo">Sexo</button>
-      <button data-lista="faixa">Faixa etária</button>
-      <button data-lista="situacao">Situação</button>
-      <button data-lista="bairro">Bairro</button>
-      <button data-lista="esf">ESF</button>
-      <button data-lista="comorbidade">Comorbidade</button>
-      <button data-lista="visitas_realizadas">Visitas realizadas</button>
-      <button data-lista="visitas_agendadas">Visitas agendadas</button>
-      <button data-lista="ativos_sem_visita">Ativos sem visitas há 60+ dias</button>
-      <button data-lista="equipe">Equipe</button>
-      <button data-lista="pendencias">Cadastros incompletos</button>
+      <div class="item-lista"><input type="checkbox" class="sel-lista" value="ativos_sem_visita"><button data-lista="ativos_sem_visita">Ativos sem visitas recentes (alerta)</button></div>
+      <div class="item-lista"><input type="checkbox" class="sel-lista" value="bairro"><button data-lista="bairro">Bairro</button></div>
+      <div class="item-lista"><input type="checkbox" class="sel-lista" value="pendencias"><button data-lista="pendencias">Cadastros incompletos</button></div>
+      <div class="item-lista"><input type="checkbox" class="sel-lista" value="comorbidade"><button data-lista="comorbidade">Comorbidade</button></div>
+      <div class="item-lista"><input type="checkbox" class="sel-lista" value="equipe"><button data-lista="equipe">Equipe</button></div>
+      <div class="item-lista"><input type="checkbox" class="sel-lista" value="esf"><button data-lista="esf">ESF</button></div>
+      <div class="item-lista"><input type="checkbox" class="sel-lista" value="faixa"><button data-lista="faixa">Faixa etária</button></div>
+      <div class="item-lista"><input type="checkbox" class="sel-lista" value="sexo"><button data-lista="sexo">Sexo</button></div>
+      <div class="item-lista"><input type="checkbox" class="sel-lista" value="situacao"><button data-lista="situacao">Situação</button></div>
+      <div class="item-lista"><input type="checkbox" class="sel-lista" value="visitas_agendadas"><button data-lista="visitas_agendadas">Visitas agendadas</button></div>
+      <div class="item-lista"><input type="checkbox" class="sel-lista" value="visitas_realizadas"><button data-lista="visitas_realizadas">Visitas realizadas</button></div>
     </section>
+    <p><button class="btn" id="btn-sel" type="button" style="width:auto">Imprimir selecionadas</button></p>
   </main>
 
   <dialog id="detalhe">
@@ -143,7 +151,7 @@
 
     const $ = (id) => document.getElementById(id);
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const DIAS_SEM_VISITA = 60;
+    let DIAS_SEM_VISITA = 60;
     const hojeLocal = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
     const fmtData = (iso) => (iso ? iso.split('-').reverse().join('/') : '—');
     const primeiroNome = (n) => (n || '').trim().split(/\s+/)[0] || '';
@@ -296,7 +304,7 @@
         case 'bairro': return ['Bairro', tabelaGrupo('Bairro', c.pacs, (p) => [p.bairro || 'Não informado'])];
         case 'esf': return ['ESF', tabelaGrupo('ESF', c.pacs, (p) => [p.esf || 'Não informado'])];
         case 'comorbidade': return ['Comorbidade', tabelaGrupo('Comorbidade', c.pacs, (p) => (p.comorbidades.length ? p.comorbidades : ['Sem comorbidade informada']))];
-        case 'ativos_sem_visita': return ['Ativos sem visitas há 60 dias ou mais', tabela(['Paciente', 'Última visita', 'Dias sem visita'],
+        case 'ativos_sem_visita': return [`Ativos sem visitas há ${DIAS_SEM_VISITA} dias ou mais`,tabela(['Paciente', 'Última visita', 'Dias sem visita'],
           c.semVisita.map((x) => [nomeLink(x.p.id, x.p.nome), x.ult ? fmtData(x.ult) : 'Nunca', x.ult ? diasEntre(x.ult, fim) : '—']))];
         case 'equipe': {
           const prof = [...usuarios.values()].filter((u) => u.papel === 'prestador' && ok(u.id)).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
@@ -322,6 +330,16 @@
       $('d-corpo').innerHTML = html;
       $('detalhe').showModal();
     }
+
+    function abrirSelecionadas() {
+      const keys = [...document.querySelectorAll('.sel-lista:checked')].map((c) => c.value);
+      if (!keys.length) { alert('Marque pelo menos uma lista.'); return; }
+      $('d-titulo').textContent = keys.length === 1 ? montar(keys[0])[0] : `${keys.length} listas selecionadas`;
+      $('d-cab').innerHTML = cabecalhoImpressao();
+      $('d-corpo').innerHTML = keys.map((k) => { const [t, h] = montar(k); return `<section class="bloco-lista"><h3>${t}</h3>${h}</section>`; }).join('');
+      $('detalhe').showModal();
+    }
+    $('btn-sel').addEventListener('click', abrirSelecionadas);
 
     document.querySelectorAll('[data-lista]').forEach((b) => b.addEventListener('click', () => abrir(b.dataset.lista)));
     $('d-fechar').addEventListener('click', () => $('detalhe').close());
@@ -365,6 +383,7 @@
       const gestor = u.papel === 'master' || u.papel === 'esf';
       $('lk-paciente').hidden = u.papel !== 'master';
       $('lk-acesso').hidden = u.papel !== 'master';
+      $('lk-ajustes').hidden = u.papel !== 'master';
       $('lk-agendar').hidden = u.papel !== 'prestador';
       $('f-prest').hidden = !gestor;
       $('f-area').hidden = !gestor;
@@ -372,6 +391,8 @@
       const d = new Date(); ini = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`; fim = hoje;
       $('ini').value = ini; $('fim').value = fim;
       await prepararEquipe();
+      const { data: cd } = await sb.from('cidades').select('dias_sem_visita_alerta').maybeSingle();
+      if (cd?.dias_sem_visita_alerta) DIAS_SEM_VISITA = cd.dias_sem_visita_alerta;
       await carregar();
     })();
   </script>
