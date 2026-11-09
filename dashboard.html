@@ -14,41 +14,60 @@
     header.topo img { height:56px; }
     .direita { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:flex-end; }
     .usuario { text-align:right; font-size:.95rem; font-weight:600; color:var(--roxo); }
-    .linkbtn { color:var(--roxo); text-decoration:underline; font-weight:500; font-size:.9rem; background:none; border:0; cursor:pointer; padding:0; }
-    main { max-width:1040px; margin:24px auto; padding:0 16px 40px; }
-    h1 { font-size:1.4rem; color:var(--roxo); margin:0 0 14px; }
-    h2 { font-size:1.05rem; color:var(--roxo); margin:28px 0 12px; }
-    .filtros { background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.08); display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; align-items:end; }
-    label { font-size:.85rem; display:block; }
-    select, input[type=date] { display:block; width:100%; margin-top:4px; padding:8px; border:1px solid #cfc9c5; border-radius:6px; font-size:.95rem; background:#fff; font-family:inherit; }
-    .btn { padding:9px 14px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-weight:600; cursor:pointer; font-size:.95rem; }
-    .btn-sec { padding:9px 14px; border:0; border-radius:6px; background:var(--roxo); color:#fff; font-weight:600; cursor:pointer; font-size:.95rem; text-decoration:none; display:inline-block; }
-    .msg { min-height:1.2em; font-size:.9rem; margin:10px 0 0; color:#7a2030; }
-    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
-    .card { background:#fff; border:0; border-top:4px solid var(--azul); border-radius:12px; padding:14px; text-align:left; cursor:pointer; box-shadow:0 2px 8px rgba(59,58,64,.08); font-family:inherit; }
-    .card:hover { border-top-color:var(--verde); }
-    .num { display:block; font-size:1.7rem; font-weight:700; color:var(--roxo); }
-    .rot { font-size:.88rem; color:var(--texto); }
-    .listas { display:flex; flex-wrap:wrap; gap:8px; }
-    .listas button { background:#fff; border:1px solid #cfc9c5; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:.9rem; font-family:inherit; color:var(--texto); }
-    .listas button:hover { border-color:var(--verde); }
-    .pac-link { color:var(--roxo); font-weight:600; text-decoration:underline; }
-    table { width:100%; border-collapse:collapse; font-size:.88rem; }
-    td, th { padding:7px; border-bottom:1px solid #eee; text-align:left; vertical-align:top; }
+    .btn { display:inline-block; padding:9px 16px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-weight:600; cursor:pointer; text-decoration:none; font-size:.95rem; }
+    .linkbtn { background:transparent; color:var(--roxo); text-decoration:underline; font-weight:500; padding:0; border:0; cursor:pointer; font-size:.9rem; }
+    main { max-width:1100px; margin:20px auto; padding:0 16px 40px; }
+    h2.secao { font-size:1rem; color:var(--roxo); margin:24px 0 10px; }
+
+    .grafico { background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.06); }
+    .grafico h2 { font-size:1rem; color:var(--roxo); margin:0 0 4px; }
+    .grafico .sub { font-size:.8rem; color:#7b7880; margin:0 0 12px; }
+    .barra-l { display:grid; grid-template-columns:minmax(120px,220px) 1fr 40px; gap:8px; align-items:center; font-size:.85rem; margin:5px 0; }
+    .barra-b { background:var(--cinza); border-radius:4px; height:14px; overflow:hidden; }
+    .barra-b i { display:block; height:100%; background:var(--verde); }
+    .barra-l b { text-align:right; }
+
+    .filtros { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; background:#fff; padding:14px; border-radius:12px; margin-top:16px; border-top:4px solid var(--azul); }
+    .filtros label { font-size:.85rem; display:flex; flex-direction:column; gap:4px; }
+    select, input { padding:7px; border:1px solid #cfc9c5; border-radius:6px; font-size:.9rem; background:#fff; }
+
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
+    .kpi { background:#fff; padding:14px; border-radius:12px; border-left:5px solid var(--verde); }
+    .kpi b { display:block; font-size:1.5rem; color:var(--roxo); }
+    .kpi span { font-size:.8rem; }
+    .clicavel { cursor:pointer; transition:box-shadow .15s; }
+    .clicavel:hover { box-shadow:0 4px 14px rgba(148,132,179,.35); }
+
+    .grade { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
+    .card { background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.06); }
+    .card h2 { font-size:1rem; margin:0 0 10px; color:var(--roxo); }
+    .rodape { font-size:.8rem; color:#7b7880; margin:8px 0 0; }
+    table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    td, th { padding:6px; border-bottom:1px solid #eee; text-align:left; vertical-align:top; }
     th { color:var(--verde); }
-    .vazio { color:#888; font-size:.9rem; }
+    .pac-link { color:var(--roxo); font-weight:600; text-decoration:underline; }
+    .vazio { color:#888; font-size:.85rem; }
+    .impr { display:none; }
+    .erro { color:#7a2030; font-size:.9rem; min-height:1.2em; }
+
+    .painel-impr { background:#fff; padding:14px; border-radius:12px; margin-top:20px; }
+    .painel-impr h2 { font-size:1rem; color:var(--roxo); margin:0 0 10px; }
+    .chks { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:6px 14px; font-size:.9rem; }
+    .chks label { display:flex; gap:6px; align-items:center; }
+    .acoes { display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap; }
     dialog { border:0; border-radius:12px; padding:20px; width:min(900px,94vw); max-height:86vh; box-shadow:0 10px 40px rgba(0,0,0,.25); }
     dialog::backdrop { background:rgba(59,58,64,.5); }
-    .dialog-acoes { display:flex; gap:10px; justify-content:flex-end; margin-top:16px; }
-    .cab-impr { display:none; font-size:.85rem; margin-bottom:12px; border-bottom:1px solid #ccc; padding-bottom:8px; }
-    .impr { display:none; }
+    dialog h2 { color:var(--roxo); margin-top:0; }
+    #impressao { display:none; }
+
     @media print {
+      body { background:#fff; }
       body * { visibility:hidden; }
-      dialog[open], dialog[open] * { visibility:visible; }
-      dialog[open] { position:absolute; left:0; top:0; width:100%; max-height:none; box-shadow:none; border:0; margin:0; padding:0; }
-      dialog::backdrop { display:none; }
-      .no-print { display:none !important; }
-      .cab-impr { display:block; }
+      #impressao, #impressao * { visibility:visible; }
+      #impressao { display:block; position:absolute; left:0; top:0; width:100%; font-size:12px; }
+      #impressao .bloco { break-inside:auto; margin-bottom:14px; }
+      #impressao h3 { color:#000; font-size:14px; margin:8px 0 4px; }
+      #impressao .cab { margin-bottom:12px; border-bottom:1px solid #999; padding-bottom:6px; }
       .tela { display:none; }
       .impr { display:inline; }
       .pac-link { color:#000; text-decoration:none; }
@@ -62,316 +81,317 @@
   <header class="topo">
     <img src="logo.png" alt="Projeto Finito">
     <div class="direita">
-      <a class="linkbtn" id="lk-paciente" href="cadastrar-paciente.html" hidden>Cadastrar paciente</a>
-      <a class="linkbtn" id="lk-acesso" href="cadastrar-profissional.html" hidden>Cadastrar novo acesso</a>
-      <a class="linkbtn" id="lk-agendar" href="agendar-visita.html" hidden>Agendar visita</a>
+      <a class="btn" id="lk-paciente" href="cadastrar-paciente.html" hidden>Cadastrar paciente</a>
+      <a class="btn" id="lk-acesso" href="cadastrar-profissional.html" hidden>Cadastrar novo acesso</a>
+      <a class="btn" id="lk-ajustes" href="ajustes.html" hidden>Configurações</a>
+      <a class="btn" id="lk-agendar" href="agendar-visita.html" hidden>Agendar visita</a>
       <div class="usuario"><span id="nome"></span><div id="papel-txt" style="font-weight:400;font-size:.85rem"></div></div>
       <button class="linkbtn" id="sair">Sair</button>
     </div>
   </header>
 
   <main>
-    <h1>Painel</h1>
-
-    <section class="filtros no-print">
-      <label>Período de<input type="date" id="ini"></label>
-      <label>até<input type="date" id="fim"></label>
-      <label id="f-prest" hidden>Profissional<select id="prestador"></select></label>
-      <label id="f-area" hidden>Área<select id="area"></select></label>
-      <label>Situação do paciente
-        <select id="situacao">
-          <option value="">Todas</option>
-          <option value="ativo">Ativos</option>
-          <option value="em_espera">Em espera</option>
-          <option value="interrompido">Interrompidos</option>
-          <option value="falecido">Falecidos</option>
-        </select>
-      </label>
-      <div><button class="btn" id="aplicar">Aplicar período</button></div>
-    </section>
-    <p class="msg" id="msg" role="alert"></p>
-
-    <h2>Pacientes na data final do período</h2>
-    <section class="cards">
-      <button class="card" data-lista="pacientes"><span class="num" id="n-pacientes">–</span><span class="rot">Pacientes</span></button>
-      <button class="card" data-lista="ativo"><span class="num" id="n-ativo">–</span><span class="rot">Ativos</span></button>
-      <button class="card" data-lista="em_espera"><span class="num" id="n-em_espera">–</span><span class="rot">Em espera</span></button>
-      <button class="card" data-lista="interrompido"><span class="num" id="n-interrompido">–</span><span class="rot">Interrompidos</span></button>
-      <button class="card" data-lista="falecido"><span class="num" id="n-falecido">–</span><span class="rot">Falecidos</span></button>
-      <button class="card" data-lista="idade"><span class="num" id="n-idade">–</span><span class="rot">Idade média (ativos)</span></button>
+    <!-- Topo: não é afetado pelos filtros -->
+    <section class="grafico">
+      <h2>Pacientes por comorbidade</h2>
+      <p class="sub" id="topo-sub">Considera apenas pacientes ativos e em espera, na data de hoje.</p>
+      <div id="topo-barras"></div>
     </section>
 
-    <h2>Visitas e acompanhamento no período</h2>
-    <section class="cards">
-      <button class="card" data-lista="visitas_ok"><span class="num" id="n-visitas_ok">–</span><span class="rot">Visitas concluídas</span></button>
-      <button class="card" data-lista="visitas_espera"><span class="num" id="n-visitas_espera">–</span><span class="rot">Visitas em espera</span></button>
-      <button class="card" data-lista="sem_conclusao"><span class="num" id="n-sem_conclusao">–</span><span class="rot">Agendamentos sem conclusão</span></button>
-      <button class="card" data-lista="visitas_paciente"><span class="num" id="n-visitas_paciente">–</span><span class="rot">Visitas por paciente (média)</span></button>
-      <button class="card" data-lista="tempo"><span class="num" id="n-tempo">–</span><span class="rot">Tempo médio (meses)</span></button>
+    <!-- Filtros por tipo de acesso -->
+    <form class="filtros" onsubmit="return false">
+      <label>Data início <input type="date" id="f-ini"></label>
+      <label>Data final <input type="date" id="f-fim"></label>
+      <label id="lbl-esf" hidden>ESF <select id="f-esf"></select></label>
+      <label id="lbl-area" hidden>Área de atuação <select id="f-area"></select></label>
+      <button type="button" class="btn" id="aplicar">Aplicar período</button>
+    </form>
+    <p class="erro" id="erro"></p>
+
+    <!-- Blocos clicáveis: abrem a lista completa -->
+    <div class="cards" id="kpis"></div>
+
+    <h2 class="secao">Relatórios</h2>
+    <div class="grade" id="grade"></div>
+    <p class="rodape">Clique em um bloco ou relatório para ver a lista completa. Nos cartões aparece só o primeiro nome do paciente; na impressão, o nome completo.</p>
+
+    <section class="painel-impr">
+      <h2>Imprimir ou salvar em PDF</h2>
+      <div class="chks" id="checks"></div>
+      <div class="acoes">
+        <button type="button" class="linkbtn" id="marcar">Marcar todas</button>
+        <button type="button" class="linkbtn" id="desmarcar">Desmarcar todas</button>
+        <button type="button" class="btn" id="imprimir">Imprimir selecionadas</button>
+      </div>
     </section>
 
-    <h2>Listas para consulta e impressão</h2>
-    <section class="listas">
-      <button data-lista="sexo">Sexo</button>
-      <button data-lista="faixa">Faixa etária</button>
-      <button data-lista="situacao">Situação</button>
-      <button data-lista="bairro">Bairro</button>
-      <button data-lista="esf">ESF</button>
-      <button data-lista="comorbidade">Comorbidade</button>
-      <button data-lista="visitas_realizadas">Visitas realizadas</button>
-      <button data-lista="visitas_agendadas">Visitas agendadas</button>
-      <button data-lista="ativos_sem_visita">Ativos sem visitas há 60+ dias</button>
-      <button data-lista="equipe">Equipe</button>
-      <button data-lista="pendencias">Cadastros incompletos</button>
-    </section>
+    <div id="impressao"></div>
   </main>
 
   <dialog id="detalhe">
-    <h2 id="d-titulo" style="margin-top:0"></h2>
-    <div class="cab-impr" id="d-cab"></div>
-    <div id="d-corpo"></div>
-    <div class="dialog-acoes no-print">
-      <button class="btn-sec" type="button" id="d-imprimir">Imprimir / salvar em PDF</button>
-      <button class="btn" type="button" id="d-fechar">Fechar</button>
-    </div>
+    <div id="detalhe-corpo"></div>
+    <p style="text-align:right"><button class="btn" id="fechar">Fechar</button></p>
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
-    // Chave pública (publishable). O banco aplica a visibilidade de cada perfil às funções do painel.
+    // Chave pública (publishable). O acesso aos dados é controlado pelo RLS do banco e pelas funções do painel.
     const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
 
     const $ = (id) => document.getElementById(id);
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const DIAS_SEM_VISITA = 60;
     const hojeLocal = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
-    const fmtData = (iso) => (iso ? iso.split('-').reverse().join('/') : '—');
-    const primeiroNome = (n) => (n || '').trim().split(/\s+/)[0] || '';
-    const pt1 = (x) => x.toFixed(1).replace('.', ',');
+    const HOJE = hojeLocal();
     const ROTULO = { ativo: 'Ativo', em_espera: 'Em espera', interrompido: 'Interrompido', falecido: 'Falecido' };
     const SEXO = { feminino: 'Feminino', masculino: 'Masculino', nao_informado: 'Não informado' };
+    const PAPEL = { master: 'Master', esf: 'ESF', prestador: 'Profissional' };
+    const cmp = (a, b) => String(a).localeCompare(String(b), 'pt-BR');
 
-    let eu = null, usuarios = new Map(), pacientes = [], visitas = [], ini = '', fim = '', hoje = '';
-
-    // Datas como AAAA-MM-DD, sem fuso
+    // Datas AAAA-MM-DD, sem fuso
     const ts = (s) => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
     const diasEntre = (a, b) => Math.round((ts(b) - ts(a)) / 86400000);
     const idadeEm = (nasc, ref) => {
       const [y, m, d] = nasc.split('-').map(Number); const [Y, M, D] = ref.split('-').map(Number);
       let a = Y - y; if (M < m || (M === m && D < d)) a--; return a;
     };
+    const fmt = (iso) => (iso ? iso.split('-').reverse().join('/') : '—');
+    const primeiroNome = (n) => (n || '').trim().split(/\s+/)[0] || '';
+    const pt1 = (x) => x.toFixed(1).replace('.', ',');
     const nomeLink = (id, nome) => `<a class="pac-link" href="perfil-paciente.html?id=${id}"><span class="tela">${esc(primeiroNome(nome))}</span><span class="impr">${esc(nome)}</span></a>`;
+    const tabela = (cab, linhas, limite) => {
+      if (!linhas.length) return '<p class="vazio">Sem dados no filtro atual.</p>';
+      const l = limite ? linhas.slice(0, limite) : linhas;
+      return `<table><tr>${cab.map((h) => `<th>${esc(h)}</th>`).join('')}</tr>` +
+        l.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('') + '</table>';
+    };
+    const contar = (lista, fn) => {
+      const m = new Map();
+      for (const x of lista) { const k = fn(x); m.set(k, (m.get(k) || 0) + 1); }
+      return [...m.entries()].sort((a, b) => b[1] - a[1] || cmp(a[0], b[0]));
+    };
 
-    // Situação do paciente na data final do período
-    function situacaoEm(p) {
-      if (p.cadastro > fim) return null;
-      if (p.data_obito && p.data_obito <= fim) return 'falecido';
-      if (p.data_interrupcao && p.data_interrupcao <= fim) return 'interrompido';
-      if ((p.datas_atendimento || []).some((d) => d <= fim)) return 'ativo';
+    // Situação do paciente na data final do período (null = ainda não cadastrado)
+    const situacaoEm = (p, ref) => {
+      if (p.cadastro > ref) return null;
+      if (p.data_obito && p.data_obito <= ref) return 'falecido';
+      if (p.data_interrupcao && p.data_interrupcao <= ref) return 'interrompido';
+      if ((p.datas_atendimento || []).some((d) => d <= ref)) return 'ativo';
       return 'em_espera';
-    }
-    function tempoDias(p) {
-      const inicio = p.data_inicio || (p.datas_atendimento || [])[0] || p.cadastro;
-      let t = fim;
-      if (p.st === 'falecido') t = p.data_obito; else if (p.st === 'interrompido') t = p.data_interrupcao;
-      return Math.max(0, diasEntre(inicio, t));
-    }
-    const ok = (uid) => {
-      const f = $('prestador').value, a = $('area').value;
-      const u = usuarios.get(uid);
-      return (!f || uid === f) && (!a || (u && u.area === a));
     };
 
-    // Monta os conjuntos que alimentam cards e listas
-    let C = {};
-    function calcular() {
-      const sit = $('situacao').value;
-      const temEquipe = !!($('prestador').value || $('area').value);
-      const todos = pacientes.map((p) => ({ ...p, st: situacaoEm(p) })).filter((p) => p.st);
-      const pacs = todos.filter((p) => (!sit || p.st === sit) &&
-        (!temEquipe || p.prestadores.some(ok) || visitas.some((v) => v.paciente_id === p.id && ok(v.prestador_id))));
+    let eu = null, cidade = null, usuarios = new Map(), base = [], pac = [], vis = [];
+    let ini = '', fim = '', LISTAS = {}, KPIS = [], ORDEM = [];
+
+    const filtros = () => ({
+      esf: $('f-esf').hidden || !$('f-esf').value ? null : Number($('f-esf').value),
+      area: $('f-area').hidden ? '' : $('f-area').value,
+    });
+    const N = () => cidade?.dias_sem_visita_alerta ?? 60;
+
+    // Topo: pacientes ativos e em espera na data de hoje, sem filtros
+    function desenharTopo() {
+      const lista = base.map((p) => ({ ...p, st: situacaoEm(p, HOJE) })).filter((p) => p.st === 'ativo' || p.st === 'em_espera');
+      const cont = contar(lista.flatMap((p) => p.comorbidades || []), (x) => x);
+      const max = cont.length ? cont[0][1] : 0;
+      $('topo-sub').textContent = `Pacientes ativos e em espera em ${fmt(HOJE)}: ${lista.length}.`;
+      $('topo-barras').innerHTML = cont.length
+        ? cont.map(([k, n]) => `<div class="barra-l"><span>${esc(k)}</span><div class="barra-b"><i style="width:${(n / max) * 100}%"></i></div><b>${n}</b></div>`).join('')
+        : '<p class="vazio">Sem comorbidades registradas.</p>';
+    }
+
+    // Monta todas as listas a partir dos filtros atuais
+    function montar() {
+      const f = filtros();
+      const n = N();
+      const papel = eu.papel;
+      const pacs = pac.map((p) => ({ ...p, st: situacaoEm(p, fim) }))
+        .filter((p) => p.st && (!f.esf || p.sede_esf === f.esf) &&
+          (!f.area || (p.prestadores || []).some((id) => usuarios.get(id)?.area === f.area)))
+        .sort((a, b) => cmp(a.nome, b.nome));
       const ids = new Set(pacs.map((p) => p.id));
-      const vis = visitas.filter((v) => ids.has(v.paciente_id) && (!temEquipe || ok(v.prestador_id)));
+      const V = vis.filter((v) => ids.has(v.paciente_id) && (!f.area || v.area === f.area));
+      const nomePac = new Map(pacs.map((p) => [p.id, p.nome]));
 
-      const ativos = pacs.filter((p) => p.st === 'ativo');
-      const concl = vis.filter((v) => v.situacao === 'concluida');
-      const agend = vis.filter((v) => v.situacao === 'agendada');
-      const comIdade = ativos.filter((p) => p.data_nascimento)
-        .map((p) => ({ p, idade: idadeEm(p.data_nascimento, fim) })).sort((a, b) => b.idade - a.idade);
-      const tempo = pacs.filter((p) => p.st !== 'em_espera')
-        .map((p) => ({ p, dias: tempoDias(p) })).sort((a, b) => b.dias - a.dias);
-      const mediaTempo = tempo.length ? tempo.reduce((s, x) => s + x.dias, 0) / tempo.length / 30.44 : null;
-      const porPac = pacs.map((p) => ({ p, n: concl.filter((v) => v.paciente_id === p.id).length })).sort((a, b) => b.n - a.n);
+      const concl = V.filter((v) => v.situacao === 'concluida');
+      const agend = V.filter((v) => v.situacao === 'agendada');
+      const semConc = agend.filter((v) => v.data_visita < HOJE);
+      const ativos = pacs.filter((p) => p.st === 'ativo' && p.cadastro < fim);
 
-      C = {
-        pacs, vis, concl, agend, ativos,
-        espera: agend.filter((v) => v.data_visita > hoje),
-        semConclusao: agend.filter((v) => v.data_visita <= hoje),
-        comIdade,
-        idadeMedia: comIdade.length ? comIdade.reduce((s, x) => s + x.idade, 0) / comIdade.length : null,
-        tempo, mediaTempo, porPac,
-        mediaVisitas: pacs.length ? concl.length / pacs.length : null,
-        semVisita: ativos.filter((p) => {
-          const d = (p.datas_atendimento || []).filter((x) => x <= fim);
-          const ult = d.length ? d[d.length - 1] : null;
-          return !ult || diasEntre(ult, fim) > DIAS_SEM_VISITA;
-        }).map((p) => {
-          const d = (p.datas_atendimento || []).filter((x) => x <= fim);
-          return { p, ult: d.length ? d[d.length - 1] : null };
-        }),
-        todos,
-      };
-      mostrarCards();
-    }
+      const datasAt = (p) => (p.datas_atendimento || []).filter((d) => d <= fim).sort();
+      const ultimo = (p) => { const d = datasAt(p); return d.length ? d[d.length - 1] : null; };
+      const primeira = (p) => datasAt(p)[0] || null;
+      const idade = (p) => (p.data_nascimento ? idadeEm(p.data_nascimento, fim) : null);
 
-    const num = (id, v) => { $(id).textContent = v; };
-    function mostrarCards() {
-      const c = C, n = c.pacs.length;
-      const cont = (st) => c.pacs.filter((p) => p.st === st).length;
-      num('n-pacientes', n);
-      num('n-ativo', cont('ativo'));
-      num('n-em_espera', cont('em_espera'));
-      num('n-interrompido', cont('interrompido'));
-      num('n-falecido', cont('falecido'));
-      num('n-idade', c.idadeMedia == null ? '—' : pt1(c.idadeMedia));
-      num('n-visitas_ok', c.concl.length);
-      num('n-visitas_espera', c.espera.length);
-      num('n-sem_conclusao', c.semConclusao.length);
-      num('n-visitas_paciente', c.mediaVisitas == null ? '—' : pt1(c.mediaVisitas));
-      num('n-tempo', c.mediaTempo == null ? '—' : pt1(c.mediaTempo));
-    }
+      const idades = ativos.map(idade).filter((x) => x != null);
+      const idadeMedia = idades.length ? idades.reduce((a, b) => a + b, 0) / idades.length : null;
 
-    // Listas: tabelas com o conteúdo de cada indicador
-    const tabela = (cab, linhas) => linhas.length
-      ? `<table><tr>${cab.map((x) => `<th>${x}</th>`).join('')}</tr>${linhas.map((l) => `<tr>${l.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</table>`
-      : '<p class="vazio">Nenhum registro.</p>';
-    const linhaPac = (p) => [nomeLink(p.id, p.nome), ROTULO[p.st], esc(p.bairro || '—'), esc(p.esf || '—')];
-    const linhaVis = (v) => [fmtData(v.data_visita), nomeLink(v.paciente_id, v.paciente_nome), esc(v.prestador_nome || '—'), esc(v.area || '—')];
-    const porGrupo = (lista, chaves) => {
-      const g = new Map();
-      lista.forEach((p) => {
-        const ks = chaves(p);
-        ks.forEach((k) => { if (!g.has(k)) g.set(k, []); g.get(k).push(p); });
+      const linhaVisita = (v) => [fmt(v.data_visita), nomeLink(v.paciente_id, v.paciente_nome || nomePac.get(v.paciente_id)), esc(v.prestador_nome || '—'), esc(v.area || '—')];
+      const porData = (a, b) => cmp(a.data_visita, b.data_visita);
+      const cabVisita = ['Data', 'Paciente', 'Profissional', 'Área'];
+
+      const porSede = new Map();
+      pacs.forEach((p) => {
+        const k = p.sede_esf ?? 0; const r = porSede.get(k) || { t: 0, a: 0 };
+        r.t++; if (p.st === 'ativo') r.a++; porSede.set(k, r);
       });
-      return [...g.entries()].sort((a, b) => a[0].localeCompare(b[0], 'pt-BR', { numeric: true }));
-    };
-    const tabelaGrupo = (rot, lista, chaves) => tabela([rot, 'Total', 'Pacientes'],
-      porGrupo(lista, chaves).map(([k, ps]) => [esc(k), ps.length, ps.map((p) => nomeLink(p.id, p.nome)).join(', ')]));
-    const faixa = (p) => {
-      if (!p.data_nascimento) return ['Não informado'];
-      const a = idadeEm(p.data_nascimento, fim), b = Math.floor(a / 10) * 10;
-      return [`${b} a ${b + 9} anos`];
-    };
-    const ordemFaixa = (k) => (k === 'Não informado' ? 999 : parseInt(k, 10));
 
-    const pendencias = () => C.pacs.filter((p) => p.dados_incompletos);
+      const porProf = new Map();
+      V.forEach((v) => {
+        const k = v.prestador_nome || '—';
+        const r = porProf.get(k) || { a: v.area || '—', c: 0, g: 0, s: 0 };
+        if (v.situacao === 'concluida') r.c++;
+        else if (v.situacao === 'agendada') { r.g++; if (v.data_visita < HOJE) r.s++; }
+        porProf.set(k, r);
+      });
 
-    function montar(key) {
-      const c = C;
-      const rec = { ativo: 'Ativos', em_espera: 'Em espera', interrompido: 'Interrompidos', falecido: 'Falecidos' };
-      switch (key) {
-        case 'pacientes': return ['Pacientes', tabela(['Paciente', 'Situação', 'Bairro', 'ESF'], c.pacs.map(linhaPac))];
-        case 'ativo': case 'em_espera': case 'interrompido': case 'falecido':
-          return [rec[key], tabela(['Paciente', 'Situação', 'Bairro', 'ESF'], c.pacs.filter((p) => p.st === key).map(linhaPac))];
-        case 'idade': return ['Idade média: ranking dos pacientes ativos (mais velho ao mais novo)',
-          tabela(['Posição', 'Paciente', 'Idade'], c.comIdade.map((x, i) => [i + 1, nomeLink(x.p.id, x.p.nome), x.idade]))
-          + (c.ativos.length - c.comIdade.length ? `<p class="vazio">${c.ativos.length - c.comIdade.length} paciente(s) sem data de nascimento.</p>` : '')];
-        case 'tempo': return ['Tempo de acompanhamento: ranking do maior ao menor',
-          tabela(['Posição', 'Paciente', 'Situação', 'Início', 'Fim', 'Meses'], c.tempo.map((x, i) => [i + 1, nomeLink(x.p.id, x.p.nome), ROTULO[x.p.st],
-            fmtData(x.p.data_inicio || (x.p.datas_atendimento || [])[0] || x.p.cadastro),
-            fmtData(x.p.st === 'falecido' ? x.p.data_obito : x.p.st === 'interrompido' ? x.p.data_interrupcao : fim),
-            pt1(x.dias / 30.44)]))];
-        case 'visitas_ok': return ['Visitas concluídas no período', tabela(['Data', 'Paciente', 'Profissional', 'Área'], c.concl.slice().sort((a, b) => a.data_visita.localeCompare(b.data_visita)).map(linhaVis))];
-        case 'visitas_espera': return ['Visitas em espera (agendadas para depois de hoje)', tabela(['Data', 'Paciente', 'Profissional', 'Área'], c.espera.slice().sort((a, b) => a.data_visita.localeCompare(b.data_visita)).map(linhaVis))];
-        case 'sem_conclusao': return ['Agendamentos sem conclusão (data já passada)', tabela(['Data', 'Paciente', 'Profissional', 'Área'], c.semConclusao.slice().sort((a, b) => a.data_visita.localeCompare(b.data_visita)).map(linhaVis))];
-        case 'visitas_paciente': return ['Visitas concluídas por paciente', tabela(['Paciente', 'Visitas'], c.porPac.map((x) => [nomeLink(x.p.id, x.p.nome), x.n]))];
-        case 'visitas_realizadas': return ['Visitas realizadas no período', tabela(['Data', 'Paciente', 'Profissional', 'Área'], c.concl.slice().sort((a, b) => a.data_visita.localeCompare(b.data_visita)).map(linhaVis))];
-        case 'visitas_agendadas': return ['Visitas agendadas no período', tabela(['Data', 'Paciente', 'Profissional', 'Área'], c.agend.slice().sort((a, b) => a.data_visita.localeCompare(b.data_visita)).map(linhaVis))];
-        case 'sexo': return ['Sexo', tabelaGrupo('Sexo', c.pacs, (p) => [SEXO[p.sexo] || 'Não informado'])];
-        case 'faixa': return ['Faixa etária (na data final do período)', (() => {
-          const g = porGrupo(c.pacs, faixa).sort((a, b) => ordemFaixa(a[0]) - ordemFaixa(b[0]));
-          return tabela(['Faixa', 'Total', 'Pacientes'], g.map(([k, ps]) => [esc(k), ps.length, ps.map((p) => nomeLink(p.id, p.nome)).join(', ')]));
-        })()];
-        case 'situacao': return ['Situação', tabelaGrupo('Situação', c.pacs, (p) => [ROTULO[p.st]])];
-        case 'bairro': return ['Bairro', tabelaGrupo('Bairro', c.pacs, (p) => [p.bairro || 'Não informado'])];
-        case 'esf': return ['ESF', tabelaGrupo('ESF', c.pacs, (p) => [p.esf || 'Não informado'])];
-        case 'comorbidade': return ['Comorbidade', tabelaGrupo('Comorbidade', c.pacs, (p) => (p.comorbidades.length ? p.comorbidades : ['Sem comorbidade informada']))];
-        case 'ativos_sem_visita': return ['Ativos sem visitas há 60 dias ou mais', tabela(['Paciente', 'Última visita', 'Dias sem visita'],
-          c.semVisita.map((x) => [nomeLink(x.p.id, x.p.nome), x.ult ? fmtData(x.ult) : 'Nunca', x.ult ? diasEntre(x.ult, fim) : '—']))];
-        case 'equipe': {
-          const prof = [...usuarios.values()].filter((u) => u.papel === 'prestador' && ok(u.id)).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-          return ['Equipe: pacientes designados e visitas realizadas no período', tabela(['Profissional', 'Área', 'Pacientes designados', 'Visitas realizadas'],
-            prof.map((u) => [esc(u.nome), esc(u.area || '—'), c.pacs.filter((p) => p.prestadores.includes(u.id)).length, c.concl.filter((v) => v.prestador_id === u.id).length]))];
-        }
-        case 'pendencias': return ['Cadastros incompletos (dados importados a completar)', tabela(['Paciente', 'Bairro', 'ESF'], pendencias().map((p) => [nomeLink(p.id, p.nome), esc(p.bairro || '—'), esc(p.esf || '—')]))];
-      }
-      return ['', ''];
+      const concPorPac = new Map();
+      concl.forEach((v) => concPorPac.set(v.paciente_id, (concPorPac.get(v.paciente_id) || 0) + 1));
+
+      LISTAS = {
+        ativos: { titulo: 'Pacientes ativos', cab: ['Paciente', 'Bairro', 'ESF', 'Idade', 'Primeira visita', 'Última visita'], impr: false,
+          linhas: ativos.map((p) => [nomeLink(p.id, p.nome), esc(p.bairro || '—'), esc(p.sede_esf != null ? 'Nº ' + p.sede_esf : '—'), idade(p) ?? '—', fmt(primeira(p)), fmt(ultimo(p))]) },
+        idade: { titulo: 'Idade média (ativos)', cab: ['Paciente', 'Idade'], impr: false,
+          linhas: ativos.filter((p) => idade(p) != null).sort((a, b) => idade(b) - idade(a)).map((p) => [nomeLink(p.id, p.nome), idade(p)]) },
+        concl: { titulo: 'Visitas realizadas', cab: cabVisita, impr: true, linhas: [...concl].sort(porData).map(linhaVisita) },
+        agend: { titulo: 'Visitas agendadas', cab: cabVisita, impr: true, linhas: [...agend].sort(porData).map(linhaVisita) },
+        semConc: { titulo: 'Visitas sem conclusão', cab: cabVisita, impr: true, linhas: [...semConc].sort(porData).map(linhaVisita) },
+        ativosSemVisita: { titulo: `Ativos sem visita há ${n} dias`, cab: ['Paciente', 'Última visita'], impr: true,
+          linhas: ativos.filter((p) => { const u = ultimo(p); return !u || diasEntre(u, fim) >= n; })
+            .map((p) => [nomeLink(p.id, p.nome), ultimo(p) ? fmt(ultimo(p)) : 'Nunca']) },
+        bairro: { titulo: 'Bairro', cab: ['Bairro', 'Pacientes'], impr: true,
+          linhas: contar(pacs, (p) => p.bairro || 'Não informado').map(([k, c]) => [esc(k), c]) },
+        esf: { titulo: 'ESF', cab: ['ESF', 'Pacientes', 'Ativos'], impr: papel !== 'esf',
+          linhas: [...porSede.entries()].sort((a, b) => a[0] - b[0]).map(([k, r]) => [k ? 'Nº ' + k : 'Não informado', r.t, r.a]) },
+        profissional: { titulo: 'Profissional', cab: ['Profissional', 'Área', 'Concluídas', 'Agendadas', 'Sem conclusão'], impr: papel !== 'prestador',
+          linhas: [...porProf.entries()].sort((a, b) => cmp(a[0], b[0])).map(([k, r]) => [esc(k), esc(r.a), r.c, r.g, r.s]) },
+        sexo: { titulo: 'Sexo', cab: ['Sexo', 'Pacientes'], impr: true,
+          linhas: contar(pacs, (p) => SEXO[p.sexo] || 'Não informado').map(([k, c]) => [esc(k), c]) },
+        tempo: { titulo: 'Tempo em atendimento', cab: ['Paciente', 'Primeira visita', 'Fim', 'Meses'], impr: true,
+          linhas: pacs.filter((p) => primeira(p)).map((p) => {
+            let fimP = fim;
+            if (p.st === 'falecido') fimP = p.data_obito; else if (p.st === 'interrompido') fimP = p.data_interrupcao;
+            const d = Math.max(0, diasEntre(primeira(p), fimP));
+            return [nomeLink(p.id, p.nome), fmt(primeira(p)), fmt(fimP), pt1(d / 30.44)];
+          }) },
+        porPac: { titulo: 'Visitas por paciente', cab: ['Paciente', 'Visitas realizadas no período'], impr: true,
+          linhas: pacs.map((p) => [nomeLink(p.id, p.nome), concPorPac.get(p.id) || 0]) },
+      };
+
+      KPIS = [
+        { k: 'ativos', v: ativos.length, t: 'Pacientes ativos' },
+        { k: 'concl', v: concl.length, t: 'Visitas realizadas' },
+        { k: 'agend', v: agend.length, t: 'Visitas agendadas' },
+        { k: 'semConc', v: semConc.length, t: 'Visitas sem conclusão' },
+        { k: 'idade', v: idadeMedia == null ? '—' : pt1(idadeMedia), t: 'Idade média (ativos)' },
+      ];
+      ORDEM = Object.keys(LISTAS).filter((k) => LISTAS[k].impr).sort((a, b) => cmp(LISTAS[a].titulo, LISTAS[b].titulo));
     }
 
-    function cabecalhoImpressao() {
-      const f = $('prestador').selectedOptions[0], a = $('area').value, s = $('situacao').selectedOptions[0];
-      return `<strong>Período:</strong> ${fmtData(ini)} a ${fmtData(fim)} · <strong>Situação:</strong> ${esc(s ? s.text : 'Todas')}` +
-        ` · <strong>Profissional:</strong> ${esc(f && f.value ? f.text : 'Todos')} · <strong>Área:</strong> ${esc(a || 'Todas')}` +
-        `<br><strong>Gerado em:</strong> ${new Date().toLocaleString('pt-BR')} · <strong>Por:</strong> ${esc(eu.nome)}`;
+    function cabecalhoHtml() {
+      const f = filtros();
+      const esfTxt = f.esf ? 'Nº ' + f.esf : 'Todas';
+      const areaTxt = f.area || 'Todas';
+      return `<div class="cab"><strong>Projeto Finito: relatório${cidade ? ' · ' + esc(cidade.nome) : ''}</strong><br>` +
+        `Período: ${fmt(ini)} a ${fmt(fim)} · ESF: ${esc(esfTxt)} · Área de atuação: ${esc(areaTxt)}<br>` +
+        `Gerado em ${new Date().toLocaleString('pt-BR')} por ${esc(eu.nome)} (${esc(PAPEL[eu.papel])})</div>`;
     }
 
-    function abrir(key) {
-      const [titulo, html] = montar(key);
-      $('d-titulo').textContent = titulo;
-      $('d-cab').innerHTML = cabecalhoImpressao();
-      $('d-corpo').innerHTML = html;
-      $('detalhe').showModal();
+    function render() {
+      montar();
+      $('kpis').innerHTML = KPIS.map((k) =>
+        `<div class="kpi clicavel" data-k="${k.k}"><b>${esc(k.v)}</b><span>${esc(k.t)}</span></div>`).join('');
+      $('grade').innerHTML = ORDEM.map((k) => {
+        const L = LISTAS[k];
+        return `<section class="card clicavel" data-k="${k}"><h2>${esc(L.titulo)}</h2>${tabela(L.cab, L.linhas, 5)}` +
+          `<p class="rodape">${L.linhas.length > 5 ? `Mostrando 5 de ${L.linhas.length}. Clique para ver todos.` : 'Clique para ver detalhes.'}</p></section>`;
+      }).join('');
+      const antes = new Set([...document.querySelectorAll('#checks input:checked')].map((c) => c.value));
+      const primeiraVez = !document.querySelector('#checks input');
+      $('checks').innerHTML = ORDEM.map((k) =>
+        `<label><input type="checkbox" value="${k}" ${primeiraVez || antes.has(k) ? 'checked' : ''}> ${esc(LISTAS[k].titulo)}</label>`).join('');
     }
-
-    document.querySelectorAll('[data-lista]').forEach((b) => b.addEventListener('click', () => abrir(b.dataset.lista)));
-    $('d-fechar').addEventListener('click', () => $('detalhe').close());
-    $('d-imprimir').addEventListener('click', () => window.print());
 
     async function carregar() {
-      ini = $('ini').value; fim = $('fim').value;
-      if (!ini || !fim || ini > fim) { $('msg').textContent = 'Confira o período: a data inicial deve ser anterior à final.'; return; }
-      $('msg').textContent = 'Carregando...';
+      ini = $('f-ini').value; fim = $('f-fim').value;
+      if (!ini || !fim || ini > fim) { $('erro').textContent = 'Confira o período: a data inicial deve ser anterior à final.'; return; }
+      $('erro').textContent = 'Carregando...';
       const [p, v] = await Promise.all([
         sb.rpc('painel_pacientes', { p_fim: fim }),
         sb.rpc('painel_visitas', { p_ini: ini, p_fim: fim }),
       ]);
-      if (p.error || v.error) { $('msg').textContent = 'Não foi possível carregar: ' + (p.error || v.error).message; return; }
-      pacientes = p.data || []; visitas = v.data || [];
-      $('msg').textContent = '';
-      calcular();
+      if (p.error || v.error) { $('erro').textContent = 'Não foi possível carregar: ' + (p.error || v.error).message; return; }
+      pac = p.data || []; vis = v.data || [];
+      $('erro').textContent = '';
+      render();
     }
 
-    async function prepararEquipe() {
-      const { data } = await sb.from('usuarios').select('id,nome,papel,area,sede_esf').order('nome');
-      usuarios = new Map((data || []).map((u) => [u.id, u]));
-      const profs = (data || []).filter((u) => u.papel === 'prestador');
-      $('prestador').innerHTML = '<option value="">Todos</option>' + profs.map((u) => `<option value="${u.id}">${esc(u.nome)}</option>`).join('');
-      const areas = [...new Set(profs.map((u) => u.area).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
-      $('area').innerHTML = '<option value="">Todas</option>' + areas.map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
-    }
+    // Blocos e cartões abrem a lista completa
+    const abrirLista = (k) => {
+      const L = LISTAS[k]; if (!L) return;
+      $('detalhe-corpo').innerHTML = `<h2>${esc(L.titulo)}</h2>${tabela(L.cab, L.linhas)}`;
+      $('detalhe').showModal();
+    };
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('a')) return;
+      const c = e.target.closest('[data-k]');
+      if (c && c.closest('#kpis, #grade')) abrirLista(c.dataset.k);
+    });
+    $('fechar').addEventListener('click', () => $('detalhe').close());
 
+    // Impressão: só as listas marcadas, com nome completo e filtros no cabeçalho
+    $('marcar').addEventListener('click', () => document.querySelectorAll('#checks input').forEach((c) => (c.checked = true)));
+    $('desmarcar').addEventListener('click', () => document.querySelectorAll('#checks input').forEach((c) => (c.checked = false)));
+    $('imprimir').addEventListener('click', () => {
+      const marcadas = [...document.querySelectorAll('#checks input:checked')].map((c) => c.value);
+      if (!marcadas.length) { alert('Marque pelo menos uma lista.'); return; }
+      const sel = ORDEM.filter((k) => marcadas.includes(k));
+      $('impressao').innerHTML = cabecalhoHtml() + sel.map((k) =>
+        `<div class="bloco"><h3>${esc(LISTAS[k].titulo)}</h3>${tabela(LISTAS[k].cab, LISTAS[k].linhas)}</div>`).join('');
+      window.print();
+    });
+
+    $('f-esf').addEventListener('change', () => { if (pac.length || vis.length) render(); });
+    $('f-area').addEventListener('change', () => { if (pac.length || vis.length) render(); });
     $('aplicar').addEventListener('click', carregar);
-    ['prestador', 'area', 'situacao'].forEach((id) => $(id).addEventListener('change', () => { if (pacientes.length || visitas.length) calcular(); }));
     $('sair').addEventListener('click', async () => { await sb.auth.signOut(); location.href = 'index.html'; });
 
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
       if (!session) { location.href = 'index.html'; return; }
-      const { data: u } = await sb.from('usuarios').select('id,nome,papel,sede_esf').eq('auth_uid', session.user.id).maybeSingle();
+      const { data: u } = await sb.from('usuarios').select('id,nome,papel,area,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
       if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
       eu = u;
       $('nome').textContent = u.nome;
-      $('papel-txt').textContent = u.papel === 'master' ? 'Master' : u.papel === 'esf' ? `ESF · sede ${u.sede_esf}` : 'Profissional';
-      const gestor = u.papel === 'master' || u.papel === 'esf';
+      $('papel-txt').textContent = PAPEL[u.papel] || '';
+
+      // Links por tipo de acesso: master (cadastros e configurações), profissional (agendar), ESF (nenhum)
       $('lk-paciente').hidden = u.papel !== 'master';
       $('lk-acesso').hidden = u.papel !== 'master';
+      $('lk-ajustes').hidden = u.papel !== 'master';
       $('lk-agendar').hidden = u.papel !== 'prestador';
-      $('f-prest').hidden = !gestor;
-      $('f-area').hidden = !gestor;
-      hoje = hojeLocal();
-      const d = new Date(); ini = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`; fim = hoje;
-      $('ini').value = ini; $('fim').value = fim;
-      await prepararEquipe();
+
+      // Filtros por tipo de acesso
+      // master: ESF e Área | ESF: Área | profissional: ESF
+      $('lbl-esf').hidden = u.papel === 'esf';
+      $('lbl-area').hidden = u.papel === 'prestador';
+
+      const { data: us } = await sb.from('usuarios').select('id,nome,papel,area,sede_esf').order('nome');
+      usuarios = new Map((us || []).map((x) => [x.id, x]));
+      const areas = [...new Set((us || []).filter((x) => x.papel === 'prestador' && x.area).map((x) => x.area))].sort(cmp);
+      $('f-area').innerHTML = '<option value="">Todas</option>' + areas.map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
+
+      const { data: cd } = await sb.from('cidades').select('nome,dias_sem_visita_alerta').maybeSingle();
+      cidade = cd || null;
+
+      const { data: bp } = await sb.rpc('painel_pacientes', { p_fim: HOJE });
+      base = bp || [];
+      const sedes = [...new Set(base.map((p) => p.sede_esf).filter((x) => x != null))].sort((a, b) => a - b);
+      $('f-esf').innerHTML = '<option value="">Todas</option>' + sedes.map((n) => `<option value="${n}">Nº ${n}</option>`).join('');
+      desenharTopo();
+
+      const d = new Date(); d.setDate(d.getDate() - 365);
+      $('f-ini').value = new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      $('f-fim').value = HOJE;
       await carregar();
     })();
   </script>
