@@ -22,7 +22,14 @@
     legend { color:var(--roxo); font-weight:600; padding:0 6px; }
     label.campo { display:block; font-size:.9rem; margin-bottom:12px; }
     input, select, textarea { display:block; width:100%; margin-top:5px; padding:9px; border:1px solid #cfc9c5; border-radius:6px; font-size:.95rem; background:#fff; font-family:inherit; }
-    select[multiple] { height:auto; }
+    .linha { display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+    .linha select { flex:1; min-width:180px; margin-top:0; }
+    .linha input { flex:1; min-width:180px; margin-top:0; }
+    .contato { border:1px dashed #cfc9c5; border-radius:8px; padding:10px; margin-bottom:10px; }
+    .contato .campos { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .contato .campos input { margin-top:0; }
+    .btn-mais { background:transparent; border:1px solid var(--verde); color:var(--verde); border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:600; }
+    .btn-rem { background:transparent; border:0; color:#9a3a4a; cursor:pointer; font-size:.85rem; text-decoration:underline; }
     .presta { display:block; font-weight:normal; margin:6px 0; font-size:.95rem; }
     button.btn { width:100%; padding:11px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
     .msg { min-height:1.2em; font-size:.9rem; margin-top:12px; text-align:center; }
@@ -59,10 +66,10 @@
             <option value="nao_informado">Não informado</option>
           </select>
         </label>
-        <label class="campo">Data de nascimento
-          <input type="date" id="nasc">
+        <label class="campo">Data de nascimento *
+          <input type="date" id="nasc" required>
         </label>
-        <label class="campo">Bairro * (zona rural entra como bairro)
+        <label class="campo">Bairro *
           <input id="bairro" required>
         </label>
         <label class="campo">Endereço
@@ -75,12 +82,8 @@
 
       <fieldset>
         <legend>Clínico</legend>
-        <label class="campo">Comorbidade principal *
-          <select id="com-principal" required></select>
-        </label>
-        <label class="campo">Comorbidades adicionais (Ctrl/Cmd para selecionar mais de uma)
-          <select id="com-extra" multiple size="6"></select>
-        </label>
+        <div id="comorbidades"></div>
+        <button type="button" class="btn-mais" id="add-com">+ Adicionar comorbidade</button>
       </fieldset>
 
       <fieldset>
@@ -94,9 +97,9 @@
         <label class="campo">Telefone *
           <input id="cont-tel" required>
         </label>
-        <label class="campo">Contatos adicionais
-          <textarea id="cont-add" rows="2"></textarea>
-        </label>
+        <p style="font-size:.9rem;margin:12px 0 6px"><strong>Contatos adicionais</strong></p>
+        <div id="contatos"></div>
+        <button type="button" class="btn-mais" id="add-contato">+ Adicionar contato</button>
       </fieldset>
 
       <fieldset>
@@ -120,7 +123,43 @@
 
     const $ = (id) => document.getElementById(id);
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    let eu = null;
+    const OUTRA = '__outra__';
+    let eu = null, COMS = [];
+
+    function opcoesComorbidade() {
+      return '<option value="">Selecione</option>' +
+        COMS.map((c) => `<option value="${c.id}">${esc(c.nome)}</option>`).join('') +
+        `<option value="${OUTRA}">Outra (escrever nova)</option>`;
+    }
+
+    function novaLinhaComorbidade() {
+      const div = document.createElement('div');
+      div.className = 'linha';
+      div.innerHTML = `<select class="com-sel">${opcoesComorbidade()}</select>
+        <input class="com-outra" placeholder="Nome da nova comorbidade" hidden>
+        <button type="button" class="btn-rem">Remover</button>`;
+      const sel = div.querySelector('.com-sel');
+      const txt = div.querySelector('.com-outra');
+      sel.addEventListener('change', () => { txt.hidden = sel.value !== OUTRA; });
+      div.querySelector('.btn-rem').addEventListener('click', () => {
+        if (document.querySelectorAll('.com-sel').length > 1) div.remove();
+        else sel.value = '';
+      });
+      $('comorbidades').appendChild(div);
+    }
+
+    function novoContato() {
+      const div = document.createElement('div');
+      div.className = 'contato';
+      div.innerHTML = `<div class="campos">
+          <input class="c-nome" placeholder="Nome">
+          <input class="c-par" placeholder="Parentesco">
+          <input class="c-tel" placeholder="Telefone">
+        </div>
+        <button type="button" class="btn-rem" style="margin-top:6px">Remover contato</button>`;
+      div.querySelector('.btn-rem').addEventListener('click', () => div.remove());
+      $('contatos').appendChild(div);
+    }
 
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
@@ -135,56 +174,90 @@
         sb.from('comorbidades').select('id,nome').order('nome'),
         sb.from('usuarios').select('id,nome,area').eq('papel', 'prestador').eq('ativo', true).order('nome'),
       ]);
-      const opcoes = (com.data || []).map((c) => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
-      $('com-principal').innerHTML = '<option value="">Selecione</option>' + opcoes;
-      $('com-extra').innerHTML = opcoes;
+      COMS = com.data || [];
+      novaLinhaComorbidade();
       $('prestadores').innerHTML = (pres.data || []).map((p) =>
         `<label class="presta"><input type="checkbox" class="presta-chk" value="${p.id}" style="display:inline;width:auto;margin-right:6px"> ${esc(p.nome)} (${esc(p.area)})</label>`).join('');
     })();
+
+    $('add-com').addEventListener('click', novaLinhaComorbidade);
+    $('add-contato').addEventListener('click', novoContato);
+
+    // Retorna o id da comorbidade; cria uma nova se for escrita manualmente (reaproveita se já existir)
+    async function resolverComorbidade(sel, txt) {
+      if (sel.value !== OUTRA) return sel.value;
+      const nome = txt.value.trim();
+      if (!nome) throw new Error('Escreva o nome da comorbidade nova.');
+      const existente = COMS.find((c) => c.nome.toLowerCase() === nome.toLowerCase());
+      if (existente) return existente.id;
+      const { data, error } = await sb.from('comorbidades')
+        .insert({ cidade_id: eu.cidade_id, nome }).select('id,nome').single();
+      if (error) throw new Error('Não foi possível criar a comorbidade: ' + error.message);
+      COMS.push(data);
+      return data.id;
+    }
 
     $('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const m = $('msg');
       const prest = [...document.querySelectorAll('.presta-chk:checked')].map((c) => c.value);
       if (!prest.length) { m.textContent = 'Designe pelo menos um prestador.'; return; }
-      const principal = $('com-principal').value;
-      if (!principal) { m.textContent = 'Escolha a comorbidade principal.'; return; }
-      const extras = [...$('com-extra').selectedOptions].map((o) => o.value).filter((v) => v !== principal);
+
+      const contatos = [...document.querySelectorAll('.contato')].map((c) => ({
+        nome: c.querySelector('.c-nome').value.trim(),
+        parentesco: c.querySelector('.c-par').value.trim(),
+        telefone: c.querySelector('.c-tel').value.trim(),
+      })).filter((c) => c.nome || c.telefone);
 
       m.textContent = 'Salvando...';
-      const { data: ult } = await sb.from('pacientes').select('numero').order('numero', { ascending: false }).limit(1);
-      const numero = (ult && ult[0] ? ult[0].numero : 0) + 1;
+      try {
+        const ids = [];
+        for (const linha of document.querySelectorAll('#comorbidades .linha')) {
+          const sel = linha.querySelector('.com-sel');
+          if (!sel.value) continue;
+          const id = await resolverComorbidade(sel, linha.querySelector('.com-outra'));
+          if (!ids.includes(id)) ids.push(id);
+        }
+        if (!ids.length) { m.textContent = 'Informe pelo menos uma comorbidade.'; return; }
 
-      const { data: pac, error: e1 } = await sb.from('pacientes').insert({
-        cidade_id: eu.cidade_id, numero,
-        nome: $('nome-pac').value.trim(), sexo: $('sexo').value,
-        bairro: $('bairro').value.trim(), esf: $('esf').value.trim(),
-      }).select('id').single();
-      if (e1) { m.textContent = 'Erro ao salvar paciente: ' + e1.message; return; }
+        const { data: ult } = await sb.from('pacientes').select('numero').order('numero', { ascending: false }).limit(1);
+        const numero = (ult && ult[0] ? ult[0].numero : 0) + 1;
 
-      const { error: e2 } = await sb.from('pacientes_sensiveis').insert({
-        paciente_id: pac.id, cidade_id: eu.cidade_id,
-        data_nascimento: $('nasc').value || null,
-        endereco: $('endereco').value.trim() || null,
-        contato_principal_nome: $('cont-nome').value.trim(),
-        contato_principal_parentesco: $('cont-par').value.trim() || null,
-        contato_principal_telefone: $('cont-tel').value.trim(),
-        contatos_adicionais: $('cont-add').value.trim() ? [{ texto: $('cont-add').value.trim() }] : [],
-        observacao: $('obs').value.trim() || null,
-      });
-      if (e2) { m.textContent = 'Paciente criado, mas os dados pessoais falharam: ' + e2.message; return; }
+        const { data: pac, error: e1 } = await sb.from('pacientes').insert({
+          cidade_id: eu.cidade_id, numero,
+          nome: $('nome-pac').value.trim(), sexo: $('sexo').value,
+          bairro: $('bairro').value.trim(), esf: $('esf').value.trim(),
+        }).select('id').single();
+        if (e1) throw new Error('Erro ao salvar paciente: ' + e1.message);
 
-      const comRows = [{ cidade_id: eu.cidade_id, paciente_id: pac.id, comorbidade_id: principal, principal: true },
-        ...extras.map((id) => ({ cidade_id: eu.cidade_id, paciente_id: pac.id, comorbidade_id: id, principal: false }))];
-      const { error: e3 } = await sb.from('paciente_comorbidades').insert(comRows);
-      if (e3) { m.textContent = 'Paciente criado, mas as comorbidades falharam: ' + e3.message; return; }
+        const { error: e2 } = await sb.from('pacientes_sensiveis').insert({
+          paciente_id: pac.id, cidade_id: eu.cidade_id,
+          data_nascimento: $('nasc').value,
+          endereco: $('endereco').value.trim() || null,
+          contato_principal_nome: $('cont-nome').value.trim(),
+          contato_principal_parentesco: $('cont-par').value.trim() || null,
+          contato_principal_telefone: $('cont-tel').value.trim(),
+          contatos_adicionais: contatos,
+          observacao: $('obs').value.trim() || null,
+        });
+        if (e2) throw new Error('Paciente criado, mas os dados pessoais falharam: ' + e2.message);
 
-      const { error: e4 } = await sb.from('designacoes').insert(
-        prest.map((uid) => ({ cidade_id: eu.cidade_id, paciente_id: pac.id, usuario_id: uid })));
-      if (e4) { m.textContent = 'Paciente criado, mas a designação falhou: ' + e4.message; return; }
+        const { error: e3 } = await sb.from('paciente_comorbidades').insert(
+          ids.map((id, i) => ({ cidade_id: eu.cidade_id, paciente_id: pac.id, comorbidade_id: id, principal: i === 0 })));
+        if (e3) throw new Error('Paciente criado, mas as comorbidades falharam: ' + e3.message);
 
-      m.textContent = `Paciente cadastrado (nº ${numero}).`;
-      e.target.reset();
+        const { error: e4 } = await sb.from('designacoes').insert(
+          prest.map((uid) => ({ cidade_id: eu.cidade_id, paciente_id: pac.id, usuario_id: uid })));
+        if (e4) throw new Error('Paciente criado, mas a designação falhou: ' + e4.message);
+
+        m.textContent = `Paciente cadastrado (nº ${numero}).`;
+        e.target.reset();
+        $('comorbidades').innerHTML = '';
+        $('contatos').innerHTML = '';
+        novaLinhaComorbidade();
+      } catch (err) {
+        m.textContent = err.message;
+      }
     });
   </script>
 </body>
