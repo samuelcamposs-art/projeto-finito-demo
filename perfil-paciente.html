@@ -133,7 +133,8 @@
         <label>Bairro *<input id="e-bairro" required></label>
         <label>ESF *<input id="e-esf" required></label>
       </div>
-      <label>Número da sede (ESF)<input type="number" id="e-sede" min="1" step="1"></label>
+      <label>Número da sede (ESF) *<input type="number" id="e-sede" min="1" step="1" required></label>
+      <label>Data do cadastro *<input type="date" id="e-dcad" required></label>
       <label>Endereço<input id="e-endereco"></label>
 
       <p class="sub"><strong>Contato principal</strong></p>
@@ -316,6 +317,7 @@
       $('e-bairro').value = P.bairro || '';
       $('e-esf').value = P.esf || '';
       $('e-sede').value = P.sede_esf || '';
+      $('e-dcad').value = P.data_cadastro || '';
       $('e-endereco').value = S?.endereco || '';
       $('e-cont-nome').value = S?.contato_principal_nome || '';
       $('e-cont-par').value = S?.contato_principal_parentesco || '';
@@ -344,7 +346,7 @@
       try {
         const { error: e1 } = await sb.from('pacientes').update({
           nome: $('e-nome').value.trim(), sexo: $('e-sexo').value, bairro: $('e-bairro').value.trim(), esf: $('e-esf').value.trim(),
-          sede_esf: Number($('e-sede').value) || null,
+          sede_esf: Number($('e-sede').value) || null, data_cadastro: $('e-dcad').value || null,
           data_interrupcao: dInt, motivo_interrupcao: dInt ? motivo : null, data_obito: dObito,
         }).eq('id', P.id);
         if (e1) throw new Error('Dados do paciente: ' + e1.message);
