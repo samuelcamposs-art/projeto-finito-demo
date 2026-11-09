@@ -78,10 +78,7 @@
         <label class="campo">Endereço
           <input id="endereco">
         </label>
-        <label class="campo">ESF *
-          <input id="esf" required>
-        </label>
-        <label class="campo">Número da sede (ESF) *
+        <label class="campo">ESF (número da sede) *
           <input type="number" id="sede" min="1" step="1" required>
         </label>
         <label class="campo">Data do cadastro *
@@ -238,7 +235,7 @@
 
         const { data: pac, error: e1 } = await sb.from('pacientes').insert({
           cidade_id: eu.cidade_id, numero, nome: nomeCompleto,
-          sexo: $('sexo').value, bairro: $('bairro').value.trim(), esf: $('esf').value.trim(),
+          sexo: $('sexo').value, bairro: $('bairro').value.trim(), esf: String(Number($('sede').value) || ''),
           sede_esf: Number($('sede').value) || null, data_cadastro: $('dcad').value,
         }).select('id').single();
         if (e1) throw new Error('Erro ao salvar paciente: ' + e1.message);
