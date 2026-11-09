@@ -291,7 +291,7 @@
       const f = filtros();
       const esfTxt = f.esf ? 'Nº ' + f.esf : 'Todas';
       const areaTxt = f.area || 'Todas';
-      return `<div class="cab"><strong>Projeto Finito: relatório${cidade ? ' · ' + esc(cidade.nome) : ''}</strong><br>` +
+      return `<div class="cab"><strong>Projeto Finito: relatório${cidade ? ' · ' + esc(cidade.nome) + '/' + esc(cidade.uf) : ''}</strong><br>` +
         `Período: ${fmt(ini)} a ${fmt(fim)} · ESF: ${esc(esfTxt)} · Área de atuação: ${esc(areaTxt)}<br>` +
         `Gerado em ${new Date().toLocaleString('pt-BR')} por ${esc(eu.nome)} (${esc(PAPEL[eu.papel])})</div>`;
     }
@@ -381,7 +381,7 @@
       const areas = [...new Set((us || []).filter((x) => x.papel === 'prestador' && x.area).map((x) => x.area))].sort(cmp);
       $('f-area').innerHTML = '<option value="">Todas</option>' + areas.map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
 
-      const { data: cd } = await sb.from('cidades').select('nome,dias_sem_visita_alerta').maybeSingle();
+      const { data: cd } = await sb.from('cidades').select('nome,uf,dias_sem_visita_alerta').maybeSingle();
       cidade = cd || null;
 
       const { data: bp } = await sb.rpc('painel_pacientes', { p_fim: HOJE });
