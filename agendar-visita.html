@@ -14,21 +14,26 @@
     .direita { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:flex-end; }
     .usuario { text-align:right; font-size:.9rem; }
     .usuario strong { color:var(--roxo); }
-    .linkbtn { background:transparent; color:var(--roxo); text-decoration:underline; font-weight:500; padding:0; border:0; cursor:pointer; font-size:.9rem; text-decoration:none; }
+    .linkbtn { color:var(--roxo); text-decoration:underline; font-weight:500; font-size:.9rem; }
     main { max-width:640px; margin:24px auto; padding:0 16px 40px; }
     h1 { font-size:1.4rem; color:var(--roxo); }
     .painel { background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.08); border-top:4px solid var(--azul); }
-    .modo { display:flex; gap:10px; flex-direction:column; margin-bottom:16px; }
-    .modo label { display:flex; gap:8px; align-items:center; padding:10px; border:1px solid #d9d4d0; border-radius:8px; cursor:pointer; }
     label.campo { display:block; font-size:.9rem; margin-bottom:14px; }
     select, input, textarea { display:block; width:100%; margin-top:6px; padding:9px; border:1px solid #cfc9c5; border-radius:6px; font-size:1rem; background:#fff; font-family:inherit; }
-    button.btn { width:100%; padding:11px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
+    .acoes { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+    .btn { width:100%; padding:11px; border:0; border-radius:6px; color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
+    .btn-confirma { background:var(--verde); }
+    .btn-finaliza { background:var(--roxo); }
     .msg { min-height:1.2em; font-size:.9rem; margin-top:12px; text-align:center; }
-    h2 { font-size:1.05rem; color:var(--roxo); margin-top:32px; }
+    .topo-lista { display:flex; justify-content:space-between; align-items:center; margin-top:32px; }
+    h2 { font-size:1.05rem; color:var(--roxo); margin:0; }
     table { width:100%; border-collapse:collapse; font-size:.9rem; background:#fff; border-radius:8px; overflow:hidden; }
     td, th { padding:8px; border-bottom:1px solid #eee; text-align:left; }
     th { color:var(--verde); }
     .vazio { color:#888; font-size:.9rem; }
+    .linkbtn-btn { background:transparent; border:0; color:var(--roxo); text-decoration:underline; font-weight:500; cursor:pointer; font-size:.9rem; }
+    dialog { border:0; border-radius:12px; padding:20px; width:min(700px,94vw); max-height:86vh; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+    dialog::backdrop { background:rgba(59,58,64,.5); }
   </style>
 </head>
 <body>
@@ -49,11 +54,6 @@
     <h1>Agendar visita</h1>
 
     <div class="painel">
-      <div class="modo">
-        <label><input type="radio" name="modo" value="agendar" checked> Agendar visita futura</label>
-        <label><input type="radio" name="modo" value="realizada"> Registrar visita já realizada (sem agendamento)</label>
-      </div>
-
       <form id="form">
         <label class="campo">Paciente *
           <select id="paciente" required></select>
@@ -64,14 +64,26 @@
         <label class="campo">Observação
           <textarea id="obs" rows="3"></textarea>
         </label>
-        <button class="btn" type="submit">Confirmar</button>
+        <div class="acoes">
+          <button class="btn btn-confirma" type="submit" id="confirmar">Confirmar agendamento</button>
+          <button class="btn btn-finaliza" type="button" id="finalizar">Finalizar visita</button>
+        </div>
         <p class="msg" id="msg" role="alert"></p>
       </form>
     </div>
 
-    <h2>Minhas próximas visitas agendadas</h2>
+    <div class="topo-lista">
+      <h2>Minhas próximas visitas</h2>
+      <button class="linkbtn-btn" id="ver-agenda">Ver agenda completa</button>
+    </div>
     <div id="lista"></div>
   </main>
+
+  <dialog id="agenda">
+    <h2 style="color:var(--roxo);margin-top:0">Agenda completa</h2>
+    <div id="agenda-corpo"></div>
+    <p style="text-align:right"><button class="btn btn-confirma" style="width:auto;padding:8px 16px" id="fechar-agenda">Fechar</button></p>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
@@ -84,61 +96,81 @@
     const fmt = (iso) => (iso ? iso.split('-').reverse().join('/') : '—');
     let eu = null, nomes = new Map();
 
-    function modo() { return document.querySelector('input[name="modo"]:checked').value; }
-
-    function ajustarData() {
-      const d = $('data');
-      if (modo() === 'agendar') { d.min = HOJE; d.removeAttribute('max'); }
-      else { d.max = HOJE; d.removeAttribute('min'); }
-    }
-
     async function carregarPacientes() {
       const { data: des } = await sb.from('designacoes').select('paciente_id').eq('usuario_id', eu.id).eq('ativa', true);
       const ids = (des || []).map((d) => d.paciente_id);
       if (!ids.length) { $('paciente').innerHTML = '<option value="">Nenhum paciente designado a você</option>'; return; }
-      const { data: pac } = await sb.from('pacientes').select('id,nome,numero,excluido_em').in('id', ids).order('nome');
+      const { data: pac } = await sb.from('pacientes').select('id,nome,excluido_em').in('id', ids).order('nome');
       const ativos = (pac || []).filter((p) => !p.excluido_em);
       ativos.forEach((p) => nomes.set(p.id, p.nome));
       $('paciente').innerHTML = '<option value="">Selecione</option>' +
         ativos.map((p) => `<option value="${p.id}">${esc(p.nome)}</option>`).join('');
     }
 
-    async function carregarLista() {
-      const { data } = await sb.from('visitas').select('paciente_id,data_visita,observacao')
-        .eq('situacao', 'agendada').gte('data_visita', HOJE).order('data_visita').limit(50);
-      if (!data || !data.length) { $('lista').innerHTML = '<p class="vazio">Nenhuma visita agendada.</p>'; return; }
-      $('lista').innerHTML = `<table><tr><th>Data</th><th>Paciente</th><th>Observação</th></tr>` +
-        data.map((v) => `<tr><td>${fmt(v.data_visita)}</td><td>${esc(nomes.get(v.paciente_id) || '—')}</td><td>${esc(v.observacao || '')}</td></tr>`).join('') +
+    async function buscarAgenda(limite) {
+      let q = sb.from('visitas').select('id,paciente_id,data_visita,observacao')
+        .eq('situacao', 'agendada').gte('data_visita', HOJE).order('data_visita');
+      if (limite) q = q.limit(limite);
+      const { data } = await q;
+      return data || [];
+    }
+
+    function tabelaAgenda(lista) {
+      if (!lista.length) return '<p class="vazio">Nenhuma visita agendada.</p>';
+      return `<table><tr><th>Data</th><th>Paciente</th><th>Observação</th></tr>` +
+        lista.map((v) => `<tr><td>${fmt(v.data_visita)}</td><td>${esc(nomes.get(v.paciente_id) || '—')}</td><td>${esc(v.observacao || '')}</td></tr>`).join('') +
         '</table>';
+    }
+
+    async function carregarLista() {
+      $('lista').innerHTML = tabelaAgenda(await buscarAgenda(5));
+    }
+
+    $('ver-agenda').addEventListener('click', async () => {
+      $('agenda-corpo').innerHTML = tabelaAgenda(await buscarAgenda(500));
+      $('agenda').showModal();
+    });
+    $('fechar-agenda').addEventListener('click', () => $('agenda').close());
+
+    // Cria a visita como agendada (o sistema define o estado; "realizada" depende da evolução enviada)
+    async function criarVisita(pid, data, obs) {
+      const { data: v, error } = await sb.from('visitas')
+        .insert({ cidade_id: eu.cidade_id, paciente_id: pid, prestador_id: eu.id, data_visita: data, observacao: obs })
+        .select('id').single();
+      if (error) throw new Error('Erro ao salvar: ' + error.message);
+      return v;
+    }
+
+    function validarCampos() {
+      const pid = $('paciente').value, data = $('data').value;
+      if (!pid || !data) throw new Error('Preencha paciente e data.');
+      return { pid, data, obs: $('obs').value.trim() || null };
     }
 
     $('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const m = $('msg');
-      const pid = $('paciente').value, data = $('data').value, obs = $('obs').value.trim() || null;
-      if (!pid || !data) { m.textContent = 'Preencha paciente e data.'; return; }
-      if (modo() === 'agendar' && data < HOJE) { m.textContent = 'Data passada: use "Registrar visita já realizada".'; return; }
-      if (modo() === 'realizada' && data > HOJE) { m.textContent = 'Visita realizada não pode ter data futura.'; return; }
-
-      m.textContent = 'Salvando...';
-      const { data: v, error } = await sb.from('visitas')
-        .insert({ cidade_id: eu.cidade_id, paciente_id: pid, prestador_id: eu.id, data_visita: data, observacao: obs })
-        .select('id').single();
-      if (error) { m.textContent = 'Erro ao salvar: ' + error.message; return; }
-
-      if (modo() === 'realizada') {
-        const { error: e2 } = await sb.from('evolucoes')
-          .insert({ cidade_id: eu.cidade_id, visita_id: v.id, paciente_id: pid, prestador_id: eu.id });
-        m.textContent = e2 ? 'Visita criada, mas a conclusão falhou: ' + e2.message : 'Visita realizada registrada.';
-      } else {
+      try {
+        const { pid, data, obs } = validarCampos();
+        if (data < HOJE) throw new Error('Para agendar, escolha uma data de hoje em diante. Para visita já feita, use "Finalizar visita".');
+        m.textContent = 'Salvando...';
+        await criarVisita(pid, data, obs);
         m.textContent = 'Visita agendada.';
-      }
-      $('form').reset();
-      ajustarData();
-      carregarLista();
+        e.target.reset();
+        await carregarLista();
+      } catch (err) { m.textContent = err.message; }
     });
 
-    document.querySelectorAll('input[name="modo"]').forEach((r) => r.addEventListener('change', ajustarData));
+    $('finalizar').addEventListener('click', async () => {
+      const m = $('msg');
+      try {
+        const { pid, data, obs } = validarCampos();
+        if (data > HOJE) throw new Error('Visita finalizada não pode ter data futura.');
+        m.textContent = 'Salvando...';
+        const v = await criarVisita(pid, data, obs);
+        location.href = `finalizar-visita.html?id=${v.id}`;
+      } catch (err) { m.textContent = err.message; }
+    });
 
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
@@ -148,7 +180,7 @@
       if (u.papel !== 'prestador') { location.href = 'dashboard.html'; return; }
       eu = u;
       $('nome').textContent = eu.nome;
-      ajustarData();
+      $('data').min = HOJE;
       await carregarPacientes();
       await carregarLista();
     })();
