@@ -137,9 +137,8 @@
       </div>
       <div class="duplo">
         <label>Bairro *<input id="e-bairro" required></label>
-        <label>ESF *<input id="e-esf" required></label>
       </div>
-      <label>Número da sede (ESF) *<input type="number" id="e-sede" min="1" step="1" required></label>
+      <label>ESF (número da sede) *<input type="number" id="e-sede" min="1" step="1" required></label>
       <label>Data do cadastro *<input type="date" id="e-dcad" required></label>
       <label>Endereço<input id="e-endereco"></label>
 
@@ -326,7 +325,6 @@
       $('e-sexo').value = P.sexo || 'nao_informado';
       $('e-nasc').value = S?.data_nascimento || '';
       $('e-bairro').value = P.bairro || '';
-      $('e-esf').value = P.esf || '';
       $('e-sede').value = P.sede_esf || '';
       $('e-dcad').value = P.data_cadastro || '';
       $('e-endereco').value = S?.endereco || '';
@@ -356,7 +354,7 @@
       m.textContent = 'Salvando...';
       try {
         const { error: e1 } = await sb.from('pacientes').update({
-          nome: $('e-nome').value.trim(), sexo: $('e-sexo').value, bairro: $('e-bairro').value.trim(), esf: $('e-esf').value.trim(),
+          nome: $('e-nome').value.trim(), sexo: $('e-sexo').value, bairro: $('e-bairro').value.trim(), esf: String(Number($('e-sede').value) || ''),
           sede_esf: Number($('e-sede').value) || null, data_cadastro: $('e-dcad').value || null,
           data_interrupcao: dInt, motivo_interrupcao: dInt ? motivo : null, data_obito: dObito,
         }).eq('id', P.id);
