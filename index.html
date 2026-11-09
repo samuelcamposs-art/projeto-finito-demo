@@ -3,398 +3,164 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Projeto Finito: painel</title>
+  <title>Projeto Finito: entrar</title>
   <style>
-    [hidden] { display:none !important; }
-    :root { --verde:#6EA67F; --roxo:#9484B3; --azul:#BEDBE9; --cinza:#EAE6E3; --texto:#3B3A40; }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--cinza); color:var(--texto); }
-    .banner { background:var(--roxo); color:#fff; text-align:center; padding:8px; font-weight:700; font-size:.85rem; letter-spacing:.04em; }
-    header.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 24px; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); flex-wrap:wrap; }
-    header.topo img { height:56px; }
-    .direita { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:flex-end; }
-    .usuario { text-align:right; font-size:.95rem; font-weight:600; color:var(--roxo); }
-    .btn { display:inline-block; padding:9px 16px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-weight:600; cursor:pointer; text-decoration:none; font-size:.95rem; }
-    .linkbtn { background:transparent; color:var(--roxo); text-decoration:underline; font-weight:500; padding:0; border:0; cursor:pointer; font-size:.9rem; }
-    main { max-width:1100px; margin:20px auto; padding:0 16px 40px; }
-    h2.secao { font-size:1rem; color:var(--roxo); margin:24px 0 10px; }
-
-    .grafico { background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.06); }
-    .grafico h2 { font-size:1rem; color:var(--roxo); margin:0 0 4px; }
-    .grafico .sub { font-size:.8rem; color:#7b7880; margin:0 0 12px; }
-    .barra-l { display:grid; grid-template-columns:minmax(120px,220px) 1fr 40px; gap:8px; align-items:center; font-size:.85rem; margin:5px 0; }
-    .barra-b { background:var(--cinza); border-radius:4px; height:14px; overflow:hidden; }
-    .barra-b i { display:block; height:100%; background:var(--verde); }
-    .barra-l b { text-align:right; }
-
-    .filtros { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; background:#fff; padding:14px; border-radius:12px; margin-top:16px; border-top:4px solid var(--azul); }
-    .filtros label { font-size:.85rem; display:flex; flex-direction:column; gap:4px; }
-    select, input { padding:7px; border:1px solid #cfc9c5; border-radius:6px; font-size:.9rem; background:#fff; }
-
-    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
-    .kpi { background:#fff; padding:14px; border-radius:12px; border-left:5px solid var(--verde); }
-    .kpi b { display:block; font-size:1.5rem; color:var(--roxo); }
-    .kpi span { font-size:.8rem; }
-    .clicavel { cursor:pointer; transition:box-shadow .15s; }
-    .clicavel:hover { box-shadow:0 4px 14px rgba(148,132,179,.35); }
-
-    .grade { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
-    .card { background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.06); }
-    .card h2 { font-size:1rem; margin:0 0 10px; color:var(--roxo); }
-    .rodape { font-size:.8rem; color:#7b7880; margin:8px 0 0; }
-    table { width:100%; border-collapse:collapse; font-size:.85rem; }
-    td, th { padding:6px; border-bottom:1px solid #eee; text-align:left; vertical-align:top; }
-    th { color:var(--verde); }
-    .pac-link { color:var(--roxo); font-weight:600; text-decoration:underline; }
-    .vazio { color:#888; font-size:.85rem; }
-    .impr { display:none; }
-    .erro { color:#7a2030; font-size:.9rem; min-height:1.2em; }
-
-    .painel-impr { background:#fff; padding:14px; border-radius:12px; margin-top:20px; }
-    .painel-impr h2 { font-size:1rem; color:var(--roxo); margin:0 0 10px; }
-    .chks { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:6px 14px; font-size:.9rem; }
-    .chks label { display:flex; gap:6px; align-items:center; }
-    .acoes { display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap; }
-    dialog { border:0; border-radius:12px; padding:20px; width:min(900px,94vw); max-height:86vh; box-shadow:0 10px 40px rgba(0,0,0,.25); }
-    dialog::backdrop { background:rgba(59,58,64,.5); }
-    dialog h2 { color:var(--roxo); margin-top:0; }
-    #impressao { display:none; }
-
-    @media print {
-      body { background:#fff; }
-      body * { visibility:hidden; }
-      #impressao, #impressao * { visibility:visible; }
-      #impressao { display:block; position:absolute; left:0; top:0; width:100%; font-size:12px; }
-      #impressao .bloco { break-inside:auto; margin-bottom:14px; }
-      #impressao h3 { color:#000; font-size:14px; margin:8px 0 4px; }
-      #impressao .cab { margin-bottom:12px; border-bottom:1px solid #999; padding-bottom:6px; }
-      .tela { display:none; }
-      .impr { display:inline; }
-      .pac-link { color:#000; text-decoration:none; }
-      td, th { padding:4px; }
+    :root {
+      --verde: #6EA67F;
+      --roxo: #9484B3;
+      --azul-claro: #BEDBE9;
+      --cinza-claro: #EAE6E3;
+      --texto: #3B3A40;
     }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--cinza-claro); color: var(--texto);
+    }
+    .banner {
+      background: var(--roxo); color: #fff; text-align: center;
+      padding: 10px; font-weight: 700; letter-spacing: .04em; font-size: .9rem;
+    }
+    header { text-align: center; padding: 28px 16px 8px; }
+    header img { width: 220px; max-width: 70%; height: auto; }
+    main { max-width: 380px; margin: 8px auto 48px; padding: 0 20px; }
+    form, .info {
+      background: #fff; padding: 24px; border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(59,58,64,.08); border-top: 4px solid var(--azul-claro);
+    }
+    label { display: block; font-size: .9rem; margin-bottom: 14px; color: var(--texto); }
+    input {
+      display: block; width: 100%; margin-top: 6px; padding: 10px;
+      border: 1px solid #cfc9c5; border-radius: 6px; font-size: 1rem; background: #fff;
+    }
+    input:focus { outline: 2px solid var(--verde); border-color: var(--verde); }
+    button {
+      width: 100%; padding: 11px; border: 0; border-radius: 6px;
+      background: var(--verde); color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 4px;
+    }
+    button:hover { filter: brightness(.95); }
+    button.secundario {
+      background: transparent; color: var(--roxo); font-weight: 500;
+      text-decoration: underline; margin-top: 12px;
+    }
+    .msg { min-height: 1.2em; font-size: .9rem; margin-top: 14px; color: var(--texto); text-align: center; }
+    .info p { margin: 8px 0; }
+    .perfil { color: var(--roxo); font-weight: 600; }
   </style>
 </head>
 <body>
   <div class="banner">Cuidado Paliativo Multiprofissional</div>
 
-  <header class="topo">
+  <header>
     <img src="logo.png" alt="Projeto Finito">
-    <div class="direita">
-      <a class="btn" id="lk-paciente" href="cadastrar-paciente.html" hidden>Cadastrar paciente</a>
-      <a class="btn" id="lk-acesso" href="cadastrar-profissional.html" hidden>Cadastrar novo acesso</a>
-      <a class="btn" id="lk-ajustes" href="ajustes.html" hidden>Configurações</a>
-      <a class="btn" id="lk-agendar" href="agendar-visita.html" hidden>Agendar visita</a>
-      <div class="usuario"><span id="nome"></span><div id="papel-txt" style="font-weight:400;font-size:.85rem"></div></div>
-      <button class="linkbtn" id="sair">Sair</button>
-    </div>
   </header>
 
   <main>
-    <!-- Topo: não é afetado pelos filtros -->
-    <section class="grafico">
-      <h2>Pacientes por comorbidade</h2>
-      <p class="sub" id="topo-sub">Considera apenas pacientes ativos e em espera, na data de hoje.</p>
-      <div id="topo-barras"></div>
-    </section>
-
-    <!-- Filtros por tipo de acesso -->
-    <form class="filtros" onsubmit="return false">
-      <label>Data início <input type="date" id="f-ini"></label>
-      <label>Data final <input type="date" id="f-fim"></label>
-      <label id="lbl-esf" hidden>ESF <select id="f-esf"></select></label>
-      <label id="lbl-area" hidden>Área de atuação <select id="f-area"></select></label>
-      <button type="button" class="btn" id="aplicar">Aplicar período</button>
+    <!-- Entrar -->
+    <form id="form-login" hidden>
+      <label>E-mail
+        <input type="email" id="email" required autocomplete="username">
+      </label>
+      <label>Senha
+        <input type="password" id="senha" required autocomplete="current-password">
+      </label>
+      <button type="submit">Entrar</button>
+      <button type="button" class="secundario" id="esqueci">Esqueci minha senha</button>
     </form>
-    <p class="erro" id="erro"></p>
 
-    <!-- Blocos clicáveis: abrem a lista completa -->
-    <div class="cards" id="kpis"></div>
+    <!-- Definir nova senha (vem do link recebido por e-mail) -->
+    <form id="form-nova-senha" hidden>
+      <p>Defina sua senha de acesso.</p>
+      <label>Nova senha (mínimo 8 caracteres)
+        <input type="password" id="nova-senha" required minlength="8" autocomplete="new-password">
+      </label>
+      <button type="submit">Salvar senha</button>
+    </form>
 
-    <h2 class="secao">Relatórios</h2>
-    <div class="grade" id="grade"></div>
-    <p class="rodape">Clique em um bloco ou relatório para ver a lista completa. Nos cartões aparece só o primeiro nome do paciente; na impressão, o nome completo.</p>
-
-    <section class="painel-impr">
-      <h2>Imprimir ou salvar em PDF</h2>
-      <div class="chks" id="checks"></div>
-      <div class="acoes">
-        <button type="button" class="linkbtn" id="marcar">Marcar todas</button>
-        <button type="button" class="linkbtn" id="desmarcar">Desmarcar todas</button>
-        <button type="button" class="btn" id="imprimir">Imprimir selecionadas</button>
-      </div>
+    <!-- Sessão ativa -->
+    <section id="sessao" class="info" hidden>
+      <p>Olá, <strong id="nome"></strong></p>
+      <p>Perfil: <span class="perfil" id="papel"></span></p>
+      <p>Painel em construção.</p>
+      <button type="button" class="secundario" id="sair">Sair</button>
     </section>
 
-    <div id="impressao"></div>
+    <p class="msg" id="msg" role="alert"></p>
   </main>
-
-  <dialog id="detalhe">
-    <div id="detalhe-corpo"></div>
-    <p style="text-align:right"><button class="btn" id="fechar">Fechar</button></p>
-  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
-    // Chave pública (publishable). O acesso aos dados é controlado pelo RLS do banco e pelas funções do painel.
-    const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
+    // Chave pública (publishable): feita para uso no navegador. Não usar chave secreta aqui.
+    const SUPABASE_URL = 'https://lkfmaienspuiufqhmmag.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const $ = (id) => document.getElementById(id);
-    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const hojeLocal = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
-    const HOJE = hojeLocal();
-    const ROTULO = { ativo: 'Ativo', em_espera: 'Em espera', interrompido: 'Interrompido', falecido: 'Falecido' };
-    const SEXO = { feminino: 'Feminino', masculino: 'Masculino', nao_informado: 'Não informado' };
-    const PAPEL = { master: 'Master', esf: 'ESF', prestador: 'Profissional' };
-    const cmp = (a, b) => String(a).localeCompare(String(b), 'pt-BR');
+    const PAPEIS = { master: 'Master', prestador: 'Profissional', esf: 'ESF' };
 
-    // Datas AAAA-MM-DD, sem fuso
-    const ts = (s) => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
-    const diasEntre = (a, b) => Math.round((ts(b) - ts(a)) / 86400000);
-    const idadeEm = (nasc, ref) => {
-      const [y, m, d] = nasc.split('-').map(Number); const [Y, M, D] = ref.split('-').map(Number);
-      let a = Y - y; if (M < m || (M === m && D < d)) a--; return a;
-    };
-    const fmt = (iso) => (iso ? iso.split('-').reverse().join('/') : '—');
-    const primeiroNome = (n) => (n || '').trim().split(/\s+/)[0] || '';
-    const pt1 = (x) => x.toFixed(1).replace('.', ',');
-    const nomeLink = (id, nome) => `<a class="pac-link" href="perfil-paciente.html?id=${id}"><span class="tela">${esc(primeiroNome(nome))}</span><span class="impr">${esc(nome)}</span></a>`;
-    const tabela = (cab, linhas, limite) => {
-      if (!linhas.length) return '<p class="vazio">Sem dados no filtro atual.</p>';
-      const l = limite ? linhas.slice(0, limite) : linhas;
-      return `<table><tr>${cab.map((h) => `<th>${esc(h)}</th>`).join('')}</tr>` +
-        l.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('') + '</table>';
-    };
-    const contar = (lista, fn) => {
-      const m = new Map();
-      for (const x of lista) { const k = fn(x); m.set(k, (m.get(k) || 0) + 1); }
-      return [...m.entries()].sort((a, b) => b[1] - a[1] || cmp(a[0], b[0]));
-    };
-
-    // Situação do paciente na data final do período (null = ainda não cadastrado)
-    const situacaoEm = (p, ref) => {
-      if (p.cadastro > ref) return null;
-      if (p.data_obito && p.data_obito <= ref) return 'falecido';
-      if (p.data_interrupcao && p.data_interrupcao <= ref) return 'interrompido';
-      if ((p.datas_atendimento || []).some((d) => d <= ref)) return 'ativo';
-      return 'em_espera';
-    };
-
-    let eu = null, cidade = null, usuarios = new Map(), base = [], pac = [], vis = [];
-    let ini = '', fim = '', LISTAS = {}, KPIS = [], ORDEM = [];
-
-    const filtros = () => ({
-      esf: $('f-esf').hidden || !$('f-esf').value ? null : Number($('f-esf').value),
-      area: $('f-area').hidden ? '' : $('f-area').value,
-    });
-    const N = () => cidade?.dias_sem_visita_alerta ?? 60;
-
-    // Topo: pacientes ativos e em espera na data de hoje, sem filtros
-    function desenharTopo() {
-      const lista = base.map((p) => ({ ...p, st: situacaoEm(p, HOJE) })).filter((p) => p.st === 'ativo' || p.st === 'em_espera');
-      const cont = contar(lista.flatMap((p) => p.comorbidades || []), (x) => x);
-      const max = cont.length ? cont[0][1] : 0;
-      $('topo-sub').textContent = `Pacientes ativos e em espera em ${fmt(HOJE)}: ${lista.length}.`;
-      $('topo-barras').innerHTML = cont.length
-        ? cont.map(([k, n]) => `<div class="barra-l"><span>${esc(k)}</span><div class="barra-b"><i style="width:${(n / max) * 100}%"></i></div><b>${n}</b></div>`).join('')
-        : '<p class="vazio">Sem comorbidades registradas.</p>';
+    function mostrar(tela) {
+      ['form-login', 'form-nova-senha', 'sessao'].forEach((id) => { $(id).hidden = id !== tela; });
     }
 
-    // Monta todas as listas a partir dos filtros atuais
-    function montar() {
-      const f = filtros();
-      const n = N();
-      const papel = eu.papel;
-      const pacs = pac.map((p) => ({ ...p, st: situacaoEm(p, fim) }))
-        .filter((p) => p.st && (!f.esf || p.sede_esf === f.esf) &&
-          (!f.area || (p.prestadores || []).some((id) => usuarios.get(id)?.area === f.area)))
-        .sort((a, b) => cmp(a.nome, b.nome));
-      const ids = new Set(pacs.map((p) => p.id));
-      const V = vis.filter((v) => ids.has(v.paciente_id) && (!f.area || v.area === f.area));
-      const nomePac = new Map(pacs.map((p) => [p.id, p.nome]));
-
-      const concl = V.filter((v) => v.situacao === 'concluida');
-      const agend = V.filter((v) => v.situacao === 'agendada');
-      const semConc = agend.filter((v) => v.data_visita < HOJE);
-      const ativos = pacs.filter((p) => p.st === 'ativo' && p.cadastro < fim);
-
-      const datasAt = (p) => (p.datas_atendimento || []).filter((d) => d <= fim).sort();
-      const ultimo = (p) => { const d = datasAt(p); return d.length ? d[d.length - 1] : null; };
-      const primeira = (p) => datasAt(p)[0] || null;
-      const idade = (p) => (p.data_nascimento ? idadeEm(p.data_nascimento, fim) : null);
-
-      const idades = ativos.map(idade).filter((x) => x != null);
-      const idadeMedia = idades.length ? idades.reduce((a, b) => a + b, 0) / idades.length : null;
-
-      const linhaVisita = (v) => [fmt(v.data_visita), nomeLink(v.paciente_id, v.paciente_nome || nomePac.get(v.paciente_id)), esc(v.prestador_nome || '—'), esc(v.area || '—')];
-      const porData = (a, b) => cmp(a.data_visita, b.data_visita);
-      const cabVisita = ['Data', 'Paciente', 'Profissional', 'Área'];
-
-      const porSede = new Map();
-      pacs.forEach((p) => {
-        const k = p.sede_esf ?? 0; const r = porSede.get(k) || { t: 0, a: 0 };
-        r.t++; if (p.st === 'ativo') r.a++; porSede.set(k, r);
-      });
-
-      const porProf = new Map();
-      V.forEach((v) => {
-        const k = v.prestador_nome || '—';
-        const r = porProf.get(k) || { a: v.area || '—', c: 0, g: 0, s: 0 };
-        if (v.situacao === 'concluida') r.c++;
-        else if (v.situacao === 'agendada') { r.g++; if (v.data_visita < HOJE) r.s++; }
-        porProf.set(k, r);
-      });
-
-      const concPorPac = new Map();
-      concl.forEach((v) => concPorPac.set(v.paciente_id, (concPorPac.get(v.paciente_id) || 0) + 1));
-
-      LISTAS = {
-        ativos: { titulo: 'Pacientes ativos', cab: ['Paciente', 'Bairro', 'ESF', 'Idade', 'Primeira visita', 'Última visita'], impr: false,
-          linhas: ativos.map((p) => [nomeLink(p.id, p.nome), esc(p.bairro || '—'), esc(p.sede_esf != null ? 'Nº ' + p.sede_esf : '—'), idade(p) ?? '—', fmt(primeira(p)), fmt(ultimo(p))]) },
-        idade: { titulo: 'Idade média (ativos)', cab: ['Paciente', 'Idade'], impr: false,
-          linhas: ativos.filter((p) => idade(p) != null).sort((a, b) => idade(b) - idade(a)).map((p) => [nomeLink(p.id, p.nome), idade(p)]) },
-        concl: { titulo: 'Visitas realizadas', cab: cabVisita, impr: true, linhas: [...concl].sort(porData).map(linhaVisita) },
-        agend: { titulo: 'Visitas agendadas', cab: cabVisita, impr: true, linhas: [...agend].sort(porData).map(linhaVisita) },
-        semConc: { titulo: 'Visitas sem conclusão', cab: cabVisita, impr: true, linhas: [...semConc].sort(porData).map(linhaVisita) },
-        ativosSemVisita: { titulo: `Ativos sem visita há ${n} dias`, cab: ['Paciente', 'Última visita'], impr: true,
-          linhas: ativos.filter((p) => { const u = ultimo(p); return !u || diasEntre(u, fim) >= n; })
-            .map((p) => [nomeLink(p.id, p.nome), ultimo(p) ? fmt(ultimo(p)) : 'Nunca']) },
-        bairro: { titulo: 'Bairro', cab: ['Bairro', 'Pacientes'], impr: true,
-          linhas: contar(pacs, (p) => p.bairro || 'Não informado').map(([k, c]) => [esc(k), c]) },
-        esf: { titulo: 'ESF', cab: ['ESF', 'Pacientes', 'Ativos'], impr: papel !== 'esf',
-          linhas: [...porSede.entries()].sort((a, b) => a[0] - b[0]).map(([k, r]) => [k ? 'Nº ' + k : 'Não informado', r.t, r.a]) },
-        profissional: { titulo: 'Profissional', cab: ['Profissional', 'Área', 'Concluídas', 'Agendadas', 'Sem conclusão'], impr: papel !== 'prestador',
-          linhas: [...porProf.entries()].sort((a, b) => cmp(a[0], b[0])).map(([k, r]) => [esc(k), esc(r.a), r.c, r.g, r.s]) },
-        sexo: { titulo: 'Sexo', cab: ['Sexo', 'Pacientes'], impr: true,
-          linhas: contar(pacs, (p) => SEXO[p.sexo] || 'Não informado').map(([k, c]) => [esc(k), c]) },
-        tempo: { titulo: 'Tempo em atendimento', cab: ['Paciente', 'Primeira visita', 'Fim', 'Meses'], impr: true,
-          linhas: pacs.filter((p) => primeira(p)).map((p) => {
-            let fimP = fim;
-            if (p.st === 'falecido') fimP = p.data_obito; else if (p.st === 'interrompido') fimP = p.data_interrupcao;
-            const d = Math.max(0, diasEntre(primeira(p), fimP));
-            return [nomeLink(p.id, p.nome), fmt(primeira(p)), fmt(fimP), pt1(d / 30.44)];
-          }) },
-        porPac: { titulo: 'Visitas por paciente', cab: ['Paciente', 'Visitas realizadas no período'], impr: true,
-          linhas: pacs.map((p) => [nomeLink(p.id, p.nome), concPorPac.get(p.id) || 0]) },
-      };
-
-      KPIS = [
-        { k: 'ativos', v: ativos.length, t: 'Pacientes ativos' },
-        { k: 'concl', v: concl.length, t: 'Visitas realizadas' },
-        { k: 'agend', v: agend.length, t: 'Visitas agendadas' },
-        { k: 'semConc', v: semConc.length, t: 'Visitas sem conclusão' },
-        { k: 'idade', v: idadeMedia == null ? '—' : pt1(idadeMedia), t: 'Idade média (ativos)' },
-      ];
-      ORDEM = Object.keys(LISTAS).filter((k) => LISTAS[k].impr).sort((a, b) => cmp(LISTAS[a].titulo, LISTAS[b].titulo));
-    }
-
-    function cabecalhoHtml() {
-      const f = filtros();
-      const esfTxt = f.esf ? 'Nº ' + f.esf : 'Todas';
-      const areaTxt = f.area || 'Todas';
-      return `<div class="cab"><strong>Projeto Finito: relatório${cidade ? ' · ' + esc(cidade.nome) : ''}</strong><br>` +
-        `Período: ${fmt(ini)} a ${fmt(fim)} · ESF: ${esc(esfTxt)} · Área de atuação: ${esc(areaTxt)}<br>` +
-        `Gerado em ${new Date().toLocaleString('pt-BR')} por ${esc(eu.nome)} (${esc(PAPEL[eu.papel])})</div>`;
-    }
-
-    function render() {
-      montar();
-      $('kpis').innerHTML = KPIS.map((k) =>
-        `<div class="kpi clicavel" data-k="${k.k}"><b>${esc(k.v)}</b><span>${esc(k.t)}</span></div>`).join('');
-      $('grade').innerHTML = ORDEM.map((k) => {
-        const L = LISTAS[k];
-        return `<section class="card clicavel" data-k="${k}"><h2>${esc(L.titulo)}</h2>${tabela(L.cab, L.linhas, 5)}` +
-          `<p class="rodape">${L.linhas.length > 5 ? `Mostrando 5 de ${L.linhas.length}. Clique para ver todos.` : 'Clique para ver detalhes.'}</p></section>`;
-      }).join('');
-      const antes = new Set([...document.querySelectorAll('#checks input:checked')].map((c) => c.value));
-      const primeiraVez = !document.querySelector('#checks input');
-      $('checks').innerHTML = ORDEM.map((k) =>
-        `<label><input type="checkbox" value="${k}" ${primeiraVez || antes.has(k) ? 'checked' : ''}> ${esc(LISTAS[k].titulo)}</label>`).join('');
-    }
-
-    async function carregar() {
-      ini = $('f-ini').value; fim = $('f-fim').value;
-      if (!ini || !fim || ini > fim) { $('erro').textContent = 'Confira o período: a data inicial deve ser anterior à final.'; return; }
-      $('erro').textContent = 'Carregando...';
-      const [p, v] = await Promise.all([
-        sb.rpc('painel_pacientes', { p_fim: fim }),
-        sb.rpc('painel_visitas', { p_ini: ini, p_fim: fim }),
-      ]);
-      if (p.error || v.error) { $('erro').textContent = 'Não foi possível carregar: ' + (p.error || v.error).message; return; }
-      pac = p.data || []; vis = v.data || [];
-      $('erro').textContent = '';
-      render();
-    }
-
-    // Blocos e cartões abrem a lista completa
-    const abrirLista = (k) => {
-      const L = LISTAS[k]; if (!L) return;
-      $('detalhe-corpo').innerHTML = `<h2>${esc(L.titulo)}</h2>${tabela(L.cab, L.linhas)}`;
-      $('detalhe').showModal();
-    };
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('a')) return;
-      const c = e.target.closest('[data-k]');
-      if (c && c.closest('#kpis, #grade')) abrirLista(c.dataset.k);
-    });
-    $('fechar').addEventListener('click', () => $('detalhe').close());
-
-    // Impressão: só as listas marcadas, com nome completo e filtros no cabeçalho
-    $('marcar').addEventListener('click', () => document.querySelectorAll('#checks input').forEach((c) => (c.checked = true)));
-    $('desmarcar').addEventListener('click', () => document.querySelectorAll('#checks input').forEach((c) => (c.checked = false)));
-    $('imprimir').addEventListener('click', () => {
-      const marcadas = [...document.querySelectorAll('#checks input:checked')].map((c) => c.value);
-      if (!marcadas.length) { alert('Marque pelo menos uma lista.'); return; }
-      const sel = ORDEM.filter((k) => marcadas.includes(k));
-      $('impressao').innerHTML = cabecalhoHtml() + sel.map((k) =>
-        `<div class="bloco"><h3>${esc(LISTAS[k].titulo)}</h3>${tabela(LISTAS[k].cab, LISTAS[k].linhas)}</div>`).join('');
-      window.print();
-    });
-
-    $('f-esf').addEventListener('change', () => { if (pac.length || vis.length) render(); });
-    $('f-area').addEventListener('change', () => { if (pac.length || vis.length) render(); });
-    $('aplicar').addEventListener('click', carregar);
-    $('sair').addEventListener('click', async () => { await sb.auth.signOut(); location.href = 'index.html'; });
-
-    (async () => {
+    async function mostrarSessao() {
       const { data: { session } } = await sb.auth.getSession();
-      if (!session) { location.href = 'index.html'; return; }
-      const { data: u } = await sb.from('usuarios').select('id,nome,papel,area,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
-      if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
-      if (u.papel === 'plataforma') { location.href = 'cadastrar-cidade.html'; return; }
-      eu = u;
-      $('nome').textContent = u.nome;
-      $('papel-txt').textContent = PAPEL[u.papel] || '';
+      if (!session) { mostrar('form-login'); return; }
+      const { data, error } = await sb.from('usuarios')
+        .select('nome, papel')
+        .eq('auth_uid', session.user.id)
+        .maybeSingle();
+      if (error || !data) {
+        await sb.auth.signOut();
+        mostrar('form-login');
+        $('msg').textContent = 'Conta sem perfil ativo. Fale com a coordenação.';
+        return;
+      }
+      window.location.href = data.papel === 'plataforma' ? 'cadastrar-cidade.html' : 'dashboard.html';
+    }
 
-      // Links por tipo de acesso: master (cadastros e configurações), profissional (agendar), ESF (nenhum)
-      $('lk-paciente').hidden = u.papel !== 'master';
-      $('lk-acesso').hidden = u.papel !== 'master';
-      $('lk-ajustes').hidden = u.papel !== 'master';
-      $('lk-agendar').hidden = u.papel !== 'prestador';
+    // Link de recuperação: o Supabase abre a página já autenticada em modo de recuperação
+    sb.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') { mostrar('form-nova-senha'); }
+    });
 
-      // Filtros por tipo de acesso
-      // master: ESF e Área | ESF: Área | profissional: ESF
-      $('lbl-esf').hidden = u.papel === 'esf';
-      $('lbl-area').hidden = u.papel === 'prestador';
+    $('form-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('msg').textContent = 'Entrando...';
+      const { error } = await sb.auth.signInWithPassword({
+        email: $('email').value.trim(),
+        password: $('senha').value,
+      });
+      $('senha').value = '';
+      if (error) { $('msg').textContent = 'E-mail ou senha inválidos.'; return; }
+      $('msg').textContent = '';
+      await mostrarSessao();
+    });
 
-      const { data: us } = await sb.from('usuarios').select('id,nome,papel,area,sede_esf').order('nome');
-      usuarios = new Map((us || []).map((x) => [x.id, x]));
-      const areas = [...new Set((us || []).filter((x) => x.papel === 'prestador' && x.area).map((x) => x.area))].sort(cmp);
-      $('f-area').innerHTML = '<option value="">Todas</option>' + areas.map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
+    $('esqueci').addEventListener('click', async () => {
+      const email = $('email').value.trim();
+      if (!email) { $('msg').textContent = 'Informe seu e-mail para receber o link.'; return; }
+      await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/' });
+      $('msg').textContent = 'Se o e-mail estiver cadastrado, você receberá um link para definir a senha.';
+    });
 
-      const { data: cd } = await sb.from('cidades').select('nome,dias_sem_visita_alerta').maybeSingle();
-      cidade = cd || null;
+    $('form-nova-senha').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { error } = await sb.auth.updateUser({ password: $('nova-senha').value });
+      if (error) { $('msg').textContent = 'Não foi possível salvar a senha. Solicite um novo link.'; return; }
+      $('nova-senha').value = '';
+      $('msg').textContent = 'Senha definida com sucesso.';
+      window.history.replaceState({}, '', '/');
+      await mostrarSessao();
+    });
 
-      const { data: bp } = await sb.rpc('painel_pacientes', { p_fim: HOJE });
-      base = bp || [];
-      const sedes = [...new Set(base.map((p) => p.sede_esf).filter((x) => x != null))].sort((a, b) => a - b);
-      $('f-esf').innerHTML = '<option value="">Todas</option>' + sedes.map((n) => `<option value="${n}">Nº ${n}</option>`).join('');
-      desenharTopo();
+    $('sair').addEventListener('click', async () => {
+      await sb.auth.signOut();
+      $('msg').textContent = '';
+      mostrar('form-login');
+    });
 
-      const d = new Date(); d.setDate(d.getDate() - 365);
-      $('f-ini').value = new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-      $('f-fim').value = HOJE;
-      await carregar();
-    })();
+    mostrarSessao();
   </script>
 </body>
 </html>
