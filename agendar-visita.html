@@ -133,21 +133,15 @@
         '</table>';
     }
 
-    // Agenda completa: todas as visitas não canceladas, com ações
+    // Agenda completa: apenas visitas agendadas (não concluídas nem canceladas)
     async function abrirAgendaCompleta() {
-      const { data } = await sb.from('visitas').select('id,paciente_id,data_visita,situacao')
-        .neq('situacao', 'cancelada').order('data_visita');
-      const linhas = (data || []).map((v) => {
-        const acao = v.situacao === 'agendada'
-          ? `<a class="btn-pequeno b-concluir" href="finalizar-visita.html?id=${v.id}">Concluir</a>`
-          : '—';
-        const cancelar = v.situacao === 'agendada'
-          ? `<button class="btn-pequeno b-cancelar" data-cancelar="${v.id}">Cancelar</button>`
-          : `<button class="btn-pequeno b-doc" disabled title="Documento disponível após a definição do armazenamento">📄</button>`;
-        return `<tr><td>${fmt(v.data_visita)}</td>` +
-          `<td><a class="pac-link" href="perfil-paciente.html?id=${v.paciente_id}">${esc(nomes.get(v.paciente_id) || '—')}</a></td>` +
-          `<td>${acao}</td><td>${cancelar}</td></tr>`;
-      });
+      const { data } = await sb.from('visitas').select('id,paciente_id,data_visita')
+        .eq('situacao', 'agendada').order('data_visita');
+      const linhas = (data || []).map((v) =>
+        `<tr><td>${fmt(v.data_visita)}</td>` +
+        `<td><a class="pac-link" href="perfil-paciente.html?id=${v.paciente_id}">${esc(nomes.get(v.paciente_id) || '—')}</a></td>` +
+        `<td><a class="btn-pequeno b-concluir" href="finalizar-visita.html?id=${v.id}">Concluir</a></td>` +
+        `<td><button class="btn-pequeno b-cancelar" data-cancelar="${v.id}">Cancelar</button></td></tr>`);
       $('agenda-corpo').innerHTML = linhas.length
         ? `<table><tr><th>Data</th><th>Paciente</th><th></th><th></th></tr>${linhas.join('')}</table>`
         : '<p class="vazio">Nenhuma visita na agenda.</p>';
