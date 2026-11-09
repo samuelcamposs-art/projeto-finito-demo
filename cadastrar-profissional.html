@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Projeto Finito: cadastrar profissional</title>
+  <title>Projeto Finito: cadastrar novo acesso</title>
   <style>
     [hidden] { display:none !important; }
     :root { --verde:#6EA67F; --roxo:#9484B3; --azul:#BEDBE9; --cinza:#EAE6E3; --texto:#3B3A40; }
@@ -17,19 +17,30 @@
     .linkbtn { color:var(--roxo); text-decoration:underline; font-weight:500; font-size:.9rem; }
     main { max-width:640px; margin:24px auto; padding:0 16px 40px; }
     h1 { font-size:1.4rem; color:var(--roxo); }
-    h2 { font-size:1.05rem; color:var(--roxo); margin-top:32px; }
     .painel { background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.08); border-top:4px solid var(--azul); }
     label { display:block; font-size:.9rem; margin-bottom:14px; }
     input, select { display:block; width:100%; margin-top:6px; padding:9px; border:1px solid #cfc9c5; border-radius:6px; font-size:1rem; background:#fff; font-family:inherit; }
     .btn { width:100%; padding:11px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
+    .btn-sec { width:auto; padding:8px 14px; background:var(--roxo); color:#fff; border:0; border-radius:6px; font-weight:600; cursor:pointer; font-size:.9rem; }
+    .btn-peq { width:auto; padding:6px 10px; font-size:.82rem; border:0; border-radius:6px; color:#fff; font-weight:600; cursor:pointer; }
     .msg { min-height:1.2em; font-size:.9rem; margin-top:12px; text-align:center; }
     #resultado { margin-top:16px; padding:14px; background:var(--cinza); border-radius:8px; font-size:.92rem; }
     .linha-link { display:flex; gap:8px; margin-top:8px; }
     .linha-link input { margin-top:0; font-size:.85rem; }
-    .btn-sec { width:auto; padding:8px 14px; background:var(--roxo); }
-    table { width:100%; border-collapse:collapse; font-size:.9rem; background:#fff; border-radius:8px; overflow:hidden; }
-    td, th { padding:8px; border-bottom:1px solid #eee; text-align:left; }
+    .acima { display:flex; justify-content:space-between; align-items:center; margin-top:28px; }
+    dialog { border:0; border-radius:12px; padding:20px; width:min(860px,94vw); max-height:86vh; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+    dialog::backdrop { background:rgba(59,58,64,.5); }
+    h2 { font-size:1.05rem; color:var(--roxo); margin:0 0 12px; }
+    table { width:100%; border-collapse:collapse; font-size:.9rem; }
+    td, th { padding:8px; border-bottom:1px solid #eee; text-align:left; vertical-align:middle; }
     th { color:var(--verde); }
+    .tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:.78rem; font-weight:600; }
+    .tag-ok { background:#e3f1e8; color:#2f6b43; }
+    .tag-pend { background:#f1ecf7; color:#5b4a80; }
+    .tag-off { background:#f5e1e4; color:#7a2030; }
+    .vazio { color:#888; font-size:.9rem; }
+    .dialog-acoes { display:flex; justify-content:flex-end; margin-top:16px; }
+    .cinza-txt { color:#6b6670; font-size:.85rem; }
   </style>
 </head>
 <body>
@@ -44,7 +55,7 @@
   </header>
 
   <main>
-    <h1>Cadastrar profissional</h1>
+    <h1>Cadastrar novo acesso</h1>
 
     <div class="painel">
       <form id="form">
@@ -54,108 +65,202 @@
         <label>E-mail *
           <input type="email" id="email" required>
         </label>
-        <label>Área de atuação *
-          <select id="area" required></select>
+        <label>Perfil *
+          <select id="tipo" required>
+            <option value="prestador">Profissional</option>
+            <option value="esf">ESF (sede)</option>
+            <option value="master">Master (administrador)</option>
+          </select>
+        </label>
+        <label id="lbl-area">Área de atuação *
+          <select id="area"></select>
         </label>
         <label id="lbl-outra" hidden>Nova área *
           <input id="area-outra" placeholder="Digite a nova área">
+        </label>
+        <label id="lbl-sede" hidden>Número da sede *
+          <input type="number" id="sede" min="1" step="1" placeholder="Ex.: 1">
         </label>
         <button class="btn" type="submit" id="enviar">Cadastrar e gerar link de acesso</button>
         <p class="msg" id="msg" role="alert"></p>
       </form>
 
       <div id="resultado" hidden>
-        <p style="margin:0 0 6px">Envie este link ao profissional. Ele abre o link, define a própria senha e entra no sistema. O link tem prazo e serve uma única vez.</p>
+        <p style="margin:0 0 6px">Envie este link à pessoa. Ela abre o link, define a própria senha e entra no sistema. O link tem prazo e serve uma única vez.</p>
         <div class="linha-link">
           <input id="link" readonly>
-          <button class="btn btn-sec" type="button" id="copiar">Copiar</button>
+          <button class="btn-sec" type="button" id="copiar">Copiar</button>
         </div>
         <p id="aviso" style="margin:8px 0 0;color:#7a2030"></p>
       </div>
     </div>
 
-    <h2>Profissionais cadastrados</h2>
-    <div id="lista"></div>
+    <div class="acima">
+      <span class="cinza-txt">Contas já criadas na cidade</span>
+      <button class="btn-sec" type="button" id="abrir-contas">Contas de acesso já cadastradas</button>
+    </div>
   </main>
+
+  <dialog id="contas">
+    <h2>Contas de acesso já cadastradas</h2>
+    <div id="contas-corpo"></div>
+    <div id="link-box" hidden style="margin-top:14px;padding:12px;background:var(--cinza);border-radius:8px">
+      <p style="margin:0 0 6px;font-size:.9rem">Link para definir a senha de <strong id="link-nome"></strong>:</p>
+      <div class="linha-link">
+        <input id="link-contas" readonly>
+        <button class="btn-sec" type="button" id="copiar-contas">Copiar</button>
+      </div>
+    </div>
+    <div class="dialog-acoes"><button class="btn-sec" type="button" id="fechar-contas">Fechar</button></div>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
-    // Chave pública (publishable). A criação do login é feita pela função do servidor, que valida o master.
+    // Chave pública (publishable). A criação e o reenvio de link são feitos pelas funções do servidor, que validam o master.
     const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
 
     const $ = (id) => document.getElementById(id);
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const ADMIN = '__admin__', OUTRA = '__outra__';
+    const OUTRA = '__outra__';
+    let eu = null;
+
+    const rotulo = (u) => u.papel === 'master' ? 'Master' : u.papel === 'esf' ? 'ESF' : 'Profissional';
+    const areaTxt = (u) => u.papel === 'esf' ? `Sede ${u.sede_esf}` : (u.area || '—');
 
     async function carregarAreas() {
       const { data } = await sb.from('areas_atuacao').select('nome').order('nome');
       $('area').innerHTML = '<option value="">Selecione</option>' +
         (data || []).map((a) => `<option value="${esc(a.nome)}">${esc(a.nome)}</option>`).join('') +
-        `<option value="${ADMIN}">Administrador (perfil master)</option>` +
-        '<option value="" disabled>ESF (em breve)</option>' +
         `<option value="${OUTRA}">Outra (escrever nova)</option>`;
     }
 
-    async function carregarLista() {
-      const { data } = await sb.from('usuarios').select('nome,email,papel,area,ativo').order('nome');
-      $('lista').innerHTML = `<table><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Área</th></tr>` +
-        (data || []).map((u) => `<tr><td>${esc(u.nome)}</td><td>${esc(u.email)}</td><td>${u.papel === 'master' ? 'Master' : 'Profissional'}</td><td>${esc(u.area || '—')}</td></tr>`).join('') +
-        '</table>';
+    function ajustarCampos() {
+      const t = $('tipo').value;
+      $('lbl-area').hidden = t !== 'prestador';
+      $('lbl-outra').hidden = true;
+      $('lbl-sede').hidden = t !== 'esf';
+      $('area').required = t === 'prestador';
+      $('sede').required = t === 'esf';
     }
+    $('tipo').addEventListener('change', ajustarCampos);
+    $('area').addEventListener('change', () => { $('lbl-outra').hidden = $('area').value !== OUTRA; });
 
     async function mensagemErro(error) {
       try { const j = await error.context.json(); return j.erro || error.message; }
       catch { return error.message; }
     }
 
-    $('area').addEventListener('change', () => { $('lbl-outra').hidden = $('area').value !== OUTRA; });
-
     $('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const m = $('msg');
-      const v = $('area').value;
-      let tipo = 'prestador', area = v;
-      if (v === ADMIN) { tipo = 'master'; area = null; }
-      else if (v === OUTRA) {
-        area = $('area-outra').value.trim();
-        if (!area) { m.textContent = 'Digite o nome da nova área.'; return; }
+      const tipo = $('tipo').value;
+      let area = null, sede = null;
+      if (tipo === 'prestador') {
+        area = $('area').value;
+        if (area === OUTRA) area = $('area-outra').value.trim();
+        if (!area) { m.textContent = 'Escolha ou digite a área de atuação.'; return; }
       }
-      if (!v) { m.textContent = 'Escolha a área de atuação.'; return; }
+      if (tipo === 'esf') {
+        sede = Number($('sede').value);
+        if (!Number.isInteger(sede) || sede <= 0) { m.textContent = 'Informe o número da sede.'; return; }
+      }
 
       $('enviar').disabled = true;
       m.textContent = 'Cadastrando...';
       $('resultado').hidden = true;
       const { data, error } = await sb.functions.invoke('criar-profissional', {
-        body: { nome: $('nome-prof').value.trim(), email: $('email').value.trim(), tipo, area },
+        body: { nome: $('nome-prof').value.trim(), email: $('email').value.trim(), tipo, area, sede },
       });
       $('enviar').disabled = false;
 
       if (error) { m.textContent = await mensagemErro(error); return; }
       if (data?.erro) { m.textContent = data.erro; return; }
 
-      m.textContent = 'Profissional cadastrado.';
+      m.textContent = 'Acesso cadastrado.';
       if (data.link) { $('link').value = data.link; $('resultado').hidden = false; }
       $('aviso').textContent = data.aviso || '';
       e.target.reset();
+      ajustarCampos();
       $('lbl-outra').hidden = true;
       await carregarAreas();
-      await carregarLista();
     });
 
     $('copiar').addEventListener('click', async () => {
-      await navigator.clipboard.writeText($('link').value);
-      $('copiar').textContent = 'Copiado';
+      try { await navigator.clipboard.writeText($('link').value); $('copiar').textContent = 'Copiado'; }
+      catch { $('link').select(); }
+    });
+
+    // Contas de acesso
+    async function carregarContas() {
+      const { data, error } = await sb.rpc('listar_contas');
+      if (error) { $('contas-corpo').innerHTML = `<p class="vazio">${esc(error.message)}</p>`; return; }
+      if (!data?.length) { $('contas-corpo').innerHTML = '<p class="vazio">Nenhuma conta cadastrada.</p>'; return; }
+      $('contas-corpo').innerHTML = `<table>
+        <tr><th>Nome</th><th>Perfil</th><th>Área</th><th>Acesso</th><th></th></tr>` +
+        data.map((u) => {
+          const eEu = u.id === eu.id;
+          const acesso = !u.ativo ? '<span class="tag tag-off">Desativado</span>'
+            : u.primeiro_acesso_feito ? '<span class="tag tag-ok">Ativo</span>'
+            : '<span class="tag tag-pend">Aguardando 1º acesso</span>';
+          let acoes = '';
+          if (!eEu) {
+            if (u.ativo && !u.primeiro_acesso_feito) acoes += `<button class="btn-peq" style="background:#6b6670" data-acao="link" data-id="${u.id}" data-nome="${esc(u.nome)}">Copiar link de senha</button> `;
+            acoes += u.ativo
+              ? `<button class="btn-peq" style="background:#9a3a4a" data-acao="desativar" data-id="${u.id}" data-nome="${esc(u.nome)}">Desativar</button>`
+              : `<button class="btn-peq" style="background:var(--verde)" data-acao="reativar" data-id="${u.id}" data-nome="${esc(u.nome)}">Reativar</button>`;
+          } else {
+            acoes = '<span class="cinza-txt">(sua conta)</span>';
+          }
+          return `<tr><td>${esc(u.nome)}</td><td>${rotulo(u)}</td><td>${esc(areaTxt(u))}</td><td>${acesso}</td><td>${acoes}</td></tr>`;
+        }).join('') + '</table>';
+    }
+
+    $('abrir-contas').addEventListener('click', async () => {
+      $('link-box').hidden = true;
+      await carregarContas();
+      $('contas').showModal();
+    });
+    $('fechar-contas').addEventListener('click', () => $('contas').close());
+    $('copiar-contas').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText($('link-contas').value); $('copiar-contas').textContent = 'Copiado'; }
+      catch { $('link-contas').select(); }
+    });
+
+    $('contas-corpo').addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-acao]');
+      if (!b) return;
+      const { acao, id, nome } = b.dataset;
+      if (acao === 'link') {
+        b.disabled = true;
+        const { data, error } = await sb.functions.invoke('reenviar-link', { body: { id } });
+        b.disabled = false;
+        if (error) { alert(await mensagemErro(error)); return; }
+        if (data?.erro) { alert(data.erro); return; }
+        $('link-nome').textContent = nome;
+        $('link-contas').value = data.link;
+        $('copiar-contas').textContent = 'Copiar';
+        $('link-box').hidden = false;
+        return;
+      }
+      if (acao === 'desativar' || acao === 'reativar') {
+        const ativar = acao === 'reativar';
+        if (!ativar && !confirm(`Desativar o acesso de ${nome}? O login deixa de funcionar. O histórico continua visível ao master.`)) return;
+        const { error } = await sb.from('usuarios').update({ ativo: ativar }).eq('id', id);
+        if (error) { alert('Não foi possível alterar: ' + error.message); return; }
+        await carregarContas();
+      }
     });
 
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
       if (!session) { location.href = 'index.html'; return; }
-      const { data: u } = await sb.from('usuarios').select('nome,papel').eq('auth_uid', session.user.id).maybeSingle();
+      const { data: u } = await sb.from('usuarios').select('id,nome,papel').eq('auth_uid', session.user.id).maybeSingle();
       if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
       if (u.papel !== 'master') { location.href = 'dashboard.html'; return; }
+      eu = u;
       $('nome').textContent = u.nome;
+      ajustarCampos();
       await carregarAreas();
-      await carregarLista();
     })();
   </script>
 </body>
