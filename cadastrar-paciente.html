@@ -81,6 +81,9 @@
         <label class="campo">ESF *
           <input id="esf" required>
         </label>
+        <label class="campo">Número da sede (ESF)
+          <input type="number" id="sede" min="1" step="1">
+        </label>
       </fieldset>
 
       <fieldset>
@@ -230,6 +233,7 @@
         const { data: pac, error: e1 } = await sb.from('pacientes').insert({
           cidade_id: eu.cidade_id, numero, nome: nomeCompleto,
           sexo: $('sexo').value, bairro: $('bairro').value.trim(), esf: $('esf').value.trim(),
+          sede_esf: Number($('sede').value) || null,
         }).select('id').single();
         if (e1) throw new Error('Erro ao salvar paciente: ' + e1.message);
 
