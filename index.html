@@ -71,7 +71,7 @@
 
     <!-- Definir nova senha (vem do link recebido por e-mail) -->
     <form id="form-nova-senha" hidden>
-      <p>Defina sua senha de acesso.</p>
+      <p>Crie sua senha para acessar a plataforma.</p>
       <label>Nova senha (mínimo 8 caracteres)
         <input type="password" id="nova-senha" required minlength="8" autocomplete="new-password">
       </label>
@@ -106,6 +106,12 @@
     async function mostrarSessao() {
       const { data: { session } } = await sb.auth.getSession();
       if (!session) { mostrar('form-login'); return; }
+      // Acesso só depois de criar a senha (link de primeiro acesso ou recuperação)
+      if (!session.user.user_metadata?.senha_definida) {
+        mostrar('form-nova-senha');
+        $('msg').textContent = 'Crie sua senha para acessar a plataforma.';
+        return;
+      }
       const { data, error } = await sb.from('usuarios')
         .select('nome, papel')
         .eq('auth_uid', session.user.id)
@@ -146,7 +152,7 @@
 
     $('form-nova-senha').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const { error } = await sb.auth.updateUser({ password: $('nova-senha').value });
+      const { error } = await sb.auth.updateUser({ password: $('nova-senha').value, data: { senha_definida: true } });
       if (error) { $('msg').textContent = 'Não foi possível salvar a senha. Solicite um novo link.'; return; }
       $('nova-senha').value = '';
       $('msg').textContent = 'Senha definida com sucesso.';
