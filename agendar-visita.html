@@ -119,32 +119,34 @@
         ativos.map((p) => `<option value="${p.id}">${esc(p.nome)}</option>`).join('');
     }
 
-    // Próximas visitas: apenas agendadas, a partir de hoje
+    // Próximas visitas: apenas agendadas, a partir de hoje (mesmas ações da agenda completa)
     async function carregarLista() {
-      const { data } = await sb.from('visitas').select('id,paciente_id,data_visita,observacao')
+      const { data } = await sb.from('visitas').select('id,paciente_id,data_visita')
         .eq('situacao', 'agendada').gte('data_visita', HOJE).order('data_visita').limit(5);
-      $('lista').innerHTML = tabelaSimples(data || []);
+      $('lista').innerHTML = tabelaVisitas(data || [], 'Nenhuma visita agendada.');
     }
 
-    function tabelaSimples(lista) {
-      if (!lista.length) return '<p class="vazio">Nenhuma visita agendada.</p>';
-      return `<table><tr><th>Data</th><th>Paciente</th><th>Observação</th></tr>` +
-        lista.map((v) => `<tr><td>${fmt(v.data_visita)}</td><td><a class="pac-link" href="perfil-paciente.html?id=${v.paciente_id}">${esc(nomes.get(v.paciente_id) || '—')}</a></td><td>${esc(v.observacao || '')}</td></tr>`).join('') +
+    // Tabela com Concluir e Cancelar; usada na lista e na agenda completa
+    function tabelaVisitas(lista, vazio) {
+      if (!lista.length) return `<p class="vazio">${vazio}</p>`;
+      return `<table><tr><th>Data</th><th>Paciente</th><th></th><th></th></tr>` +
+        lista.map((v) =>
+          `<tr data-linha="${v.id}"><td>${fmt(v.data_visita)}</td>` +
+          `<td><a class="pac-link" href="perfil-paciente.html?id=${v.paciente_id}">${esc(nomes.get(v.paciente_id) || '—')}</a></td>` +
+          `<td><a class="btn-pequeno b-concluir" href="finalizar-visita.html?id=${v.id}">Concluir</a></td>` +
+          `<td><button class="btn-pequeno b-cancelar" data-cancelar="${v.id}">Cancelar</button></td></tr>`).join('') +
         '</table>';
     }
 
     // Agenda completa: apenas visitas agendadas (não concluídas nem canceladas)
-    async function abrirAgendaCompleta() {
+    async function renderAgenda() {
       const { data } = await sb.from('visitas').select('id,paciente_id,data_visita')
         .eq('situacao', 'agendada').order('data_visita');
-      const linhas = (data || []).map((v) =>
-        `<tr><td>${fmt(v.data_visita)}</td>` +
-        `<td><a class="pac-link" href="perfil-paciente.html?id=${v.paciente_id}">${esc(nomes.get(v.paciente_id) || '—')}</a></td>` +
-        `<td><a class="btn-pequeno b-concluir" href="finalizar-visita.html?id=${v.id}">Concluir</a></td>` +
-        `<td><button class="btn-pequeno b-cancelar" data-cancelar="${v.id}">Cancelar</button></td></tr>`);
-      $('agenda-corpo').innerHTML = linhas.length
-        ? `<table><tr><th>Data</th><th>Paciente</th><th></th><th></th></tr>${linhas.join('')}</table>`
-        : '<p class="vazio">Nenhuma visita na agenda.</p>';
+      $('agenda-corpo').innerHTML = tabelaVisitas(data || [], 'Nenhuma visita na agenda.');
+    }
+
+    async function abrirAgendaCompleta() {
+      await renderAgenda();
       $('agenda').showModal();
     }
 
@@ -152,24 +154,30 @@
     $('fechar-agenda').addEventListener('click', () => $('agenda').close());
 
     // Cancelamento com confirmação (Sim/Não). Agendamento é descartável: a visita vira "cancelada".
-    $('agenda-corpo').addEventListener('click', (e) => {
+    // Vale para a lista e para a agenda completa.
+    function pedirCancelamento(e) {
       const b = e.target.closest('[data-cancelar]');
       if (!b) return;
       idCancelar = b.dataset.cancelar;
       $('confirma').showModal();
-    });
+    }
+    $('lista').addEventListener('click', pedirCancelamento);
+    $('agenda-corpo').addEventListener('click', pedirCancelamento);
     $('nao').addEventListener('click', () => { idCancelar = null; $('confirma').close(); });
     $('sim').addEventListener('click', async () => {
       if (!idCancelar) return;
+      const id = idCancelar;
+      idCancelar = null;
+      $('confirma').close();
       const { error } = await sb.from('visitas')
         .update({ situacao: 'cancelada', cancelada_motivo: 'Cancelado pelo profissional' })
-        .eq('id', idCancelar);
-      $('confirma').close();
-      idCancelar = null;
+        .eq('id', id);
       if (error) { $('msg').textContent = 'Não foi possível cancelar: ' + error.message; return; }
+      // Remove a linha de imediato (lista e agenda), sem reabrir a agenda
+      document.querySelectorAll(`tr[data-linha="${id}"]`).forEach((tr) => tr.remove());
       $('msg').textContent = 'Agendamento cancelado.';
-      await abrirAgendaCompleta();
       await carregarLista();
+      if ($('agenda').open) await renderAgenda();
     });
 
     async function criarVisita(pid, data, obs) {
