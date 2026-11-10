@@ -24,17 +24,20 @@
     .linha-cidade { display:grid; grid-template-columns:1fr 120px; gap:12px; }
     @media (max-width:600px) { .linha-cidade { grid-template-columns:1fr; } }
     .btn { padding:10px 18px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
-    .btn-pequeno { padding:6px 12px; font-size:.85rem; border-radius:6px; border:0; color:#fff; cursor:pointer; font-weight:600; }
+    .btn-pequeno { padding:6px 12px; font-size:.85rem; border-radius:6px; border:0; color:#fff; cursor:pointer; font-weight:600; white-space:nowrap; }
     .b-desativar { background:#9a3a4a; }
     .b-reativar { background:var(--verde); }
+    .b-responsavel { background:var(--roxo); }
     .msg { min-height:1.2em; font-size:.9rem; margin-top:12px; }
-    .link-box { margin-top:14px; padding:12px; background:#f6f4f8; border-radius:8px; font-size:.9rem; }
-    .link-box textarea { width:100%; min-height:70px; font-size:.85rem; margin:6px 0; border:1px solid #cfc9c5; border-radius:6px; padding:8px; font-family:inherit; }
     table { width:100%; border-collapse:collapse; font-size:.9rem; background:#fff; border-radius:8px; overflow:hidden; }
     td, th { padding:8px; border-bottom:1px solid #eee; text-align:left; vertical-align:middle; }
     th { color:var(--verde); }
     .vazio { color:#888; font-size:.9rem; }
     .nota { font-size:.85rem; color:#7b7880; margin-top:8px; }
+    dialog { border:0; border-radius:12px; padding:20px; width:min(480px,94vw); box-shadow:0 10px 40px rgba(0,0,0,.25); }
+    dialog::backdrop { background:rgba(59,58,64,.5); }
+    dialog h2 { margin:0 0 12px; }
+    .dialog-acoes { display:flex; gap:10px; justify-content:flex-end; margin-top:16px; }
     @media (max-width:600px) { header.topo img { height:44px; } main { margin:16px auto; } }
   </style>
 </head>
@@ -67,22 +70,36 @@
         <label class="campo">E-mail do master *
           <input type="email" id="email" required>
         </label>
-        <button class="btn" type="submit" id="cadastrar">Cadastrar cidade e criar acesso master</button>
+        <button class="btn" type="submit" id="cadastrar">Cadastrar cidade e acesso master</button>
         <p class="msg" id="msg" role="alert"></p>
+        <p class="nota">O master entra com a senha inicial <strong>12345678</strong> e pode trocá-la em "Esqueci minha senha".</p>
       </form>
-      <div class="link-box" id="link-box" hidden>
-        <strong>Link para o master definir a senha</strong>
-        <textarea id="link" readonly></textarea>
-        <button class="btn-pequeno b-reativar" type="button" id="copiar">Copiar link</button>
-        <p class="nota">Envie este link ao master. Ele expira; se não for usado, gere outro pela recuperação de senha na tela de entrada.</p>
-      </div>
     </section>
 
     <h2>Cidades cadastradas</h2>
     <p class="msg" id="msg-lista"></p>
     <div id="lista"></div>
-    <p class="nota">Desativar uma cidade desativa todos os acessos vinculados a ela. Os dados são mantidos. Ao reativar, apenas o master volta a ficar ativo; os demais acessos continuam como estavam.</p>
+    <p class="nota">Desativar uma cidade desativa todos os acessos vinculados a ela. Os dados são mantidos. Ao reativar, apenas o master volta a ficar ativo.</p>
   </main>
+
+  <dialog id="dialog-responsavel">
+    <h2>Alterar responsável</h2>
+    <p class="nota" style="margin:0 0 12px">Cidade: <strong id="resp-cidade"></strong>. Os dados da cidade não são alterados.</p>
+    <form id="form-responsavel">
+      <label class="campo">Nome do novo master *
+        <input id="resp-nome" required>
+      </label>
+      <label class="campo">E-mail do novo master *
+        <input type="email" id="resp-email" required>
+      </label>
+      <p class="nota">O login do master atual é excluído e o novo master entra com a senha inicial <strong>12345678</strong>.</p>
+      <p class="msg" id="msg-resp" role="alert"></p>
+      <div class="dialog-acoes">
+        <button class="btn-pequeno b-responsavel" type="button" id="resp-cancelar" style="background:#9a9aa6">Cancelar</button>
+        <button class="btn-pequeno b-responsavel" type="submit" id="resp-salvar">Salvar</button>
+      </div>
+    </form>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
@@ -91,22 +108,32 @@
 
     const $ = (id) => document.getElementById(id);
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    let CIDADES = [];
     const UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
     $('uf').innerHTML = UFS.map((u) => `<option value="${u}"${u === 'MG' ? ' selected' : ''}>${u}</option>`).join('');
+
+    let CIDADES = [];
+    let CIDADE_EDITANDO = null;
+
+    async function mensagemErro(error, padrao) {
+      try { const j = await error.context.json(); return j.erro || padrao; }
+      catch { return padrao; }
+    }
 
     function desenharLista() {
       if (!CIDADES.length) { $('lista').innerHTML = '<p class="vazio">Nenhuma cidade cadastrada.</p>'; return; }
       $('lista').innerHTML = '<table><tr><th>Cidade</th><th>Master</th><th>E-mail</th><th>Acesso</th><th>Situação</th><th></th></tr>' +
-        CIDADES.map((c) =>
-          `<tr><td>${esc(c.nome)} (${esc(c.uf)})</td>` +
-          `<td>${esc(c.master_nome || '—')}</td>` +
-          `<td>${esc(c.master_email || '—')}</td>` +
-          `<td>${c.primeiro_acesso_feito ? 'Senha criada' : 'Aguardando criação de senha'}</td>` +
-          `<td>${c.ativa ? 'Ativa' : '<strong>Desativada</strong>'}</td>` +
-          `<td>${c.ativa
-            ? `${!c.primeiro_acesso_feito && c.master_email ? `<button class="btn-pequeno b-novolink" data-id="${c.id}" data-acao="novolink" data-nome="${esc(c.nome)}">Novo link</button> ` : ''}<button class="btn-pequeno b-desativar" data-id="${c.id}" data-acao="desativar" data-nome="${esc(c.nome)}">Desativar</button>`
-            : `<button class="btn-pequeno b-reativar" data-id="${c.id}" data-acao="reativar" data-nome="${esc(c.nome)}">Reativar</button>`}</td></tr>`).join('') +
+        CIDADES.map((c) => {
+          const acoes = c.ativa
+            ? `<button class="btn-pequeno b-responsavel" data-acao="responsavel" data-id="${c.id}">Alterar responsável</button> ` +
+              `<button class="btn-pequeno b-desativar" data-acao="desativar" data-id="${c.id}" data-nome="${esc(c.nome)}">Desativar</button>`
+            : `<button class="btn-pequeno b-reativar" data-acao="reativar" data-id="${c.id}" data-nome="${esc(c.nome)}">Reativar</button>`;
+          return `<tr><td>${esc(c.nome)} (${esc(c.uf)})</td>` +
+            `<td>${esc(c.master_nome || '—')}</td>` +
+            `<td>${esc(c.master_email || '—')}</td>` +
+            `<td>${c.primeiro_acesso_feito ? 'Já acessou' : 'Nunca acessou'}</td>` +
+            `<td>${c.ativa ? 'Ativa' : '<strong>Desativada</strong>'}</td>` +
+            `<td>${acoes}</td></tr>`;
+        }).join('') +
         '</table>';
     }
 
@@ -121,52 +148,54 @@
     $('lista').addEventListener('click', async (e) => {
       const b = e.target.closest('[data-acao]');
       if (!b) return;
-      if (b.dataset.acao === 'novolink') {
-        // Master que ainda não criou a senha: gera um novo link de acesso
-        $('msg-lista').textContent = 'Gerando link...';
-        const { data, error } = await sb.functions.invoke('novo-link-master', { body: { cidade_id: b.dataset.id } });
-        if (error) {
-          let texto = 'Não foi possível gerar o link.';
-          try { const j = await error.context.json(); texto = j.erro || texto; } catch (_) {}
-          $('msg-lista').textContent = texto;
-          return;
-        }
-        $('link').value = data.link;
-        $('link-box').hidden = false;
-        $('link-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        $('msg-lista').textContent = `Novo link gerado para ${data.master}. Envie-o ao master para criar a senha.`;
+      const { acao, id, nome } = b.dataset;
+
+      if (acao === 'responsavel') {
+        const c = CIDADES.find((x) => x.id === id);
+        if (!c) return;
+        CIDADE_EDITANDO = c;
+        $('resp-cidade').textContent = `${c.nome} (${c.uf})`;
+        $('resp-nome').value = c.master_nome || '';
+        $('resp-email').value = c.master_email || '';
+        $('msg-resp').textContent = '';
+        $('dialog-responsavel').showModal();
         return;
       }
-      const ativar = b.dataset.acao === 'reativar';
-      const pergunta = ativar
-        ? `Reativar ${b.dataset.nome}? Apenas o master volta a ficar ativo; os demais acessos continuam como estavam.`
-        : `Desativar ${b.dataset.nome}? Todos os acessos da cidade serão desativados. Os dados serão mantidos.`;
-      if (!confirm(pergunta)) return;
-      if (ativar) {
-        // Reativar: reativa a cidade e gera um novo link para o master definir a senha
-        $('msg-lista').textContent = 'Reativando...';
-        const { data, error } = await sb.functions.invoke('reativar-cidade', { body: { cidade_id: b.dataset.id } });
-        if (error) {
-          let texto = 'Não foi possível reativar a cidade.';
-          try { const j = await error.context.json(); texto = j.erro || texto; } catch (_) {}
-          $('msg-lista').textContent = texto;
-          return;
-        }
+
+      if (acao === 'reativar') {
+        if (!confirm(`Reativar ${nome}? Apenas o master volta a ficar ativo; os demais acessos continuam como estavam.`)) return;
+        const { error } = await sb.rpc('alterar_status_cidade', { p_cidade: id, p_ativa: true });
+        if (error) { $('msg-lista').textContent = 'Não foi possível reativar: ' + error.message; return; }
+        $('msg-lista').textContent = 'Cidade reativada.';
         await carregarCidades();
-        if (data?.link) {
-          $('link').value = data.link;
-          $('link-box').hidden = false;
-          $('link-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
-          $('msg').textContent = `Cidade reativada. Envie o novo link a ${data.master || 'o master'} para criar a senha.`;
-          $('msg-lista').textContent = 'Cidade reativada. Veja o novo link acima.';
-        } else {
-          $('msg-lista').textContent = data?.aviso || 'Cidade reativada.';
-        }
         return;
       }
-      const { error } = await sb.rpc('alterar_status_cidade', { p_cidade: b.dataset.id, p_ativa: false });
-      if (error) { $('msg-lista').textContent = 'Não foi possível alterar: ' + error.message; return; }
-      $('msg-lista').textContent = 'Cidade desativada.';
+
+      if (acao === 'desativar') {
+        if (!confirm(`Desativar ${nome}? Todos os acessos da cidade serão desativados. Os dados serão mantidos.`)) return;
+        const { error } = await sb.rpc('alterar_status_cidade', { p_cidade: id, p_ativa: false });
+        if (error) { $('msg-lista').textContent = 'Não foi possível desativar: ' + error.message; return; }
+        $('msg-lista').textContent = 'Cidade desativada.';
+        await carregarCidades();
+      }
+    });
+
+    $('resp-cancelar').addEventListener('click', () => $('dialog-responsavel').close());
+
+    $('form-responsavel').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!CIDADE_EDITANDO) return;
+      const m = $('msg-resp');
+      m.textContent = 'Salvando...';
+      $('resp-salvar').disabled = true;
+      const { data, error } = await sb.functions.invoke('trocar-master', {
+        body: { cidade_id: CIDADE_EDITANDO.id, nome: $('resp-nome').value.trim(), email: $('resp-email').value.trim() },
+      });
+      $('resp-salvar').disabled = false;
+      if (error) { m.textContent = await mensagemErro(error, 'Não foi possível alterar o responsável.'); return; }
+      if (data?.erro) { m.textContent = data.erro; return; }
+      $('dialog-responsavel').close();
+      $('msg-lista').textContent = 'Responsável alterado. O novo master entra com a senha inicial 12345678.';
       await carregarCidades();
     });
 
@@ -174,37 +203,22 @@
       e.preventDefault();
       const m = $('msg');
       m.textContent = 'Cadastrando...';
-      $('link-box').hidden = true;
       const { data, error } = await sb.functions.invoke('cadastrar-cidade', {
         body: { cidade: $('cidade').value.trim(), uf: $('uf').value, nome: $('nome-master').value.trim(), email: $('email').value.trim() },
       });
-      if (error) {
-        let texto = 'Não foi possível cadastrar a cidade.';
-        try { const j = await error.context.json(); texto = j.erro || texto; } catch (_) {}
-        m.textContent = texto;
-        return;
-      }
-      if (data?.link) {
-        $('link').value = data.link;
-        $('link-box').hidden = false;
-        m.textContent = data.aviso ? data.aviso : 'Cidade cadastrada. Envie o link ao master para ele definir a senha.';
-      } else {
-        m.textContent = data?.aviso || 'Cidade cadastrada.';
-      }
+      if (error) { m.textContent = await mensagemErro(error, 'Não foi possível cadastrar a cidade.'); return; }
+      if (data?.erro) { m.textContent = data.erro; return; }
+      m.textContent = 'Cidade cadastrada. O master entra com a senha inicial 12345678.';
       e.target.reset();
+      $('uf').value = 'MG';
       await carregarCidades();
-    });
-
-    $('copiar').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText($('link').value); $('copiar').textContent = 'Copiado'; }
-      catch (_) { $('link').select(); }
     });
 
     $('sair').addEventListener('click', async () => { await sb.auth.signOut(); location.href = 'index.html'; });
 
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
-      if (!session || !session.user.user_metadata?.senha_definida) { location.href = 'index.html'; return; }
+      if (!session) { location.href = 'index.html'; return; }
       const { data: u } = await sb.from('usuarios').select('nome,papel').eq('auth_uid', session.user.id).maybeSingle();
       if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
       if (u.papel !== 'plataforma') { location.href = 'dashboard.html'; return; }
