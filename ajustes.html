@@ -44,10 +44,6 @@
           <input type="number" id="dias" min="1" step="1" required>
           <span class="ajuda">Ativos sem visita há este número de dias ou mais aparecem na lista de alerta.</span>
         </label>
-        <label>Evoluções guardadas por profissional e paciente
-          <input type="number" id="limite" min="1" step="1" required>
-          <span class="ajuda">Ao enviar uma evolução além deste número, a mais antiga deixa de ter imagem disponível. O registro permanece.</span>
-        </label>
         <label>Prazo para cancelar exclusão de paciente (horas)
           <input type="number" id="prazo" min="0" step="1" required>
           <span class="ajuda">Depois deste prazo, o paciente excluído fica oculto nas telas e nos indicadores.</span>
@@ -72,12 +68,12 @@
     $('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const m = $('msg');
-      const dias = Number($('dias').value), limite = Number($('limite').value), prazo = Number($('prazo').value);
-      if (!(dias >= 1) || !(limite >= 1) || !(prazo >= 0)) { m.textContent = 'Confira os valores informados.'; return; }
+      const dias = Number($('dias').value), prazo = Number($('prazo').value);
+      if (!(dias >= 1) || !(prazo >= 0)) { m.textContent = 'Confira os valores informados.'; return; }
       $('salvar').disabled = true;
       m.textContent = 'Salvando...';
       const { error } = await sb.from('cidades').update({
-        dias_sem_visita_alerta: dias, limite_evolucoes: limite, prazo_cancelamento_horas: prazo,
+        dias_sem_visita_alerta: dias, prazo_cancelamento_horas: prazo,
         area_primeira_visita: $('area1').value.trim(),
       }).eq('id', cidadeId);
       $('salvar').disabled = false;
@@ -86,16 +82,15 @@
 
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
-      if (!session || !session.user.user_metadata?.senha_definida) { location.href = 'index.html'; return; }
+      if (!session) { location.href = 'index.html'; return; }
       const { data: u } = await sb.from('usuarios').select('id,nome,papel,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
       if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
       if (u.papel !== 'master') { location.href = 'dashboard.html'; return; }
       cidadeId = u.cidade_id;
       $('nome').textContent = u.nome;
-      const { data: c, error } = await sb.from('cidades').select('dias_sem_visita_alerta,limite_evolucoes,prazo_cancelamento_horas,area_primeira_visita').eq('id', cidadeId).maybeSingle();
+      const { data: c, error } = await sb.from('cidades').select('dias_sem_visita_alerta,prazo_cancelamento_horas,area_primeira_visita').eq('id', cidadeId).maybeSingle();
       if (error || !c) { $('msg').textContent = 'Não foi possível carregar os ajustes.'; return; }
       $('dias').value = c.dias_sem_visita_alerta;
-      $('limite').value = c.limite_evolucoes;
       $('prazo').value = c.prazo_cancelamento_horas;
       $('area1').value = c.area_primeira_visita || '';
     })();
