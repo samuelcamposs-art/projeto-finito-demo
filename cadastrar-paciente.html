@@ -28,7 +28,9 @@
     .linha input { flex:1; min-width:180px; margin-top:0; }
     .contato { border:1px dashed #cfc9c5; border-radius:8px; padding:10px; margin-bottom:10px; }
     .contato .campos { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    .contato .campos input { margin-top:0; }
+    .contato .campos input, .contato .campos select { margin-top:4px; }
+    .contato .campos label { font-size:.85rem; }
+    .contato .campos .c-nome-box { grid-column:1 / -1; }
     .btn-mais { background:transparent; border:1px solid var(--verde); color:var(--verde); border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:600; }
     .btn-rem { background:transparent; border:0; color:#9a3a4a; cursor:pointer; font-size:.85rem; text-decoration:underline; }
     .presta { display:block; font-weight:normal; margin:6px 0; font-size:.95rem; }
@@ -96,17 +98,7 @@
       </fieldset>
 
       <fieldset>
-        <legend>Contato principal</legend>
-        <label class="campo">Nome *
-          <input id="cont-nome" required>
-        </label>
-        <label class="campo">Parentesco
-          <input id="cont-par">
-        </label>
-        <label class="campo">Telefone *
-          <input id="cont-tel" required>
-        </label>
-        <p style="font-size:.9rem;margin:12px 0 6px"><strong>Contatos adicionais</strong></p>
+        <legend>Contatos</legend>
         <div id="contatos"></div>
         <button type="button" class="btn-mais" id="add-contato">+ Adicionar contato</button>
       </fieldset>
@@ -157,15 +149,36 @@
       $('comorbidades').appendChild(div);
     }
 
+    const TIPO_TXT = { proprio: 'Próprio', familiar: 'Familiar', cuidador: 'Cuidador (ILPI, amigos e cuidadores)' };
+
     function novoContato() {
       const div = document.createElement('div');
       div.className = 'contato';
       div.innerHTML = `<div class="campos">
-          <input class="c-nome" placeholder="Nome">
-          <input class="c-par" placeholder="Parentesco">
-          <input class="c-tel" placeholder="Telefone">
+          <label>Número (celular com DDD) *
+            <input class="c-tel" inputmode="numeric" placeholder="37999999999" required>
+          </label>
+          <label>Selecionar *
+            <select class="c-tipo" required>
+              <option value="">Selecione</option>
+              <option value="proprio">Próprio</option>
+              <option value="familiar">Familiar</option>
+              <option value="cuidador">Cuidador (ILPI, amigos e cuidadores)</option>
+            </select>
+          </label>
+          <label class="c-nome-box" hidden>Nome *
+            <input class="c-nome" placeholder="Nome do contato">
+          </label>
         </div>
         <button type="button" class="btn-rem" style="margin-top:6px">Remover contato</button>`;
+      const tipo = div.querySelector('.c-tipo');
+      const box = div.querySelector('.c-nome-box');
+      const nome = div.querySelector('.c-nome');
+      tipo.addEventListener('change', () => {
+        const mostra = tipo.value === 'familiar' || tipo.value === 'cuidador';
+        box.hidden = !mostra;
+        nome.required = mostra;
+      });
       div.querySelector('.btn-rem').addEventListener('click', () => div.remove());
       $('contatos').appendChild(div);
     }
@@ -185,6 +198,7 @@
       ]);
       COMS = com.data || [];
       novaLinhaComorbidade();
+      novoContato();
       $('prestadores').innerHTML = (pres.data || []).map((p) =>
         `<label class="presta"><input type="checkbox" class="presta-chk" value="${p.id}" style="display:inline;width:auto;margin-right:6px"> ${esc(p.nome)} (${esc(p.area)})</label>`).join('');
     })();
@@ -211,11 +225,14 @@
       const prest = [...document.querySelectorAll('.presta-chk:checked')].map((c) => c.value);
       if (!prest.length) { m.textContent = 'Designe pelo menos um prestador.'; return; }
 
-      const contatos = [...document.querySelectorAll('.contato')].map((c) => ({
-        nome: c.querySelector('.c-nome').value.trim(),
-        parentesco: c.querySelector('.c-par').value.trim(),
-        telefone: c.querySelector('.c-tel').value.trim(),
-      })).filter((c) => c.nome || c.telefone);
+      const contatos = [...document.querySelectorAll('.contato')].map((c) => {
+        const tipo = c.querySelector('.c-tipo').value;
+        const nome = c.querySelector('.c-nome').value.trim();
+        return { tipo, nome: tipo === 'proprio' ? null : (nome || null), telefone: c.querySelector('.c-tel').value.replace(/\D/g, '') };
+      });
+      if (!contatos.length) { m.textContent = 'Cadastre pelo menos um contato.'; return; }
+      const invalido = contatos.find((c) => !c.tipo || ![10, 11].includes(c.telefone.length) || (c.tipo !== 'proprio' && !c.nome));
+      if (invalido) { m.textContent = 'Confira os contatos: selecione o tipo, informe o nome (quando não for Próprio) e o celular com DDD (10 ou 11 dígitos).'; return; }
 
       m.textContent = 'Salvando...';
       try {
@@ -244,9 +261,9 @@
           paciente_id: pac.id, cidade_id: eu.cidade_id,
           data_nascimento: $('nasc').value,
           endereco: $('endereco').value.trim() || null,
-          contato_principal_nome: $('cont-nome').value.trim(),
-          contato_principal_parentesco: $('cont-par').value.trim() || null,
-          contato_principal_telefone: $('cont-tel').value.trim(),
+          contato_principal_nome: contatos[0].nome || nomeCompleto,
+          contato_principal_parentesco: TIPO_TXT[contatos[0].tipo],
+          contato_principal_telefone: contatos[0].telefone,
           contatos_adicionais: contatos,
           observacao: $('obs').value.trim() || null,
         });
@@ -264,6 +281,7 @@
         e.target.reset();
         $('comorbidades').innerHTML = '';
         $('contatos').innerHTML = '';
+        novoContato();
         novaLinhaComorbidade();
       } catch (err) {
         m.textContent = err.message;
