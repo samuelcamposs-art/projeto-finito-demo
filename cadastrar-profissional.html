@@ -206,7 +206,7 @@
             acoes = '<span class="cinza-txt">(sua conta)</span>';
           } else {
             acoes = u.ativo
-              ? `<button class="btn-peq" style="background:#9a3a4a" data-acao="desativar" data-id="${u.id}" data-nome="${esc(u.nome)}">Desativar</button>`
+              ? `<button class="btn-peq" style="background:#9a3a4a" data-acao="desativar" data-nunca="${u.primeiro_acesso_feito ? '0' : '1'}" data-id="${u.id}" data-nome="${esc(u.nome)}">Desativar</button>`
               : `<button class="btn-peq" style="background:var(--verde)" data-acao="reativar" data-id="${u.id}" data-nome="${esc(u.nome)}">Reativar</button>`;
             if (podeExcluir(u)) acoes += ` <button class="btn-peq" style="background:#7a2030" data-acao="excluir" data-id="${u.id}" data-nome="${esc(u.nome)}">Excluir</button>`;
           }
@@ -224,8 +224,12 @@
       const b = e.target.closest('[data-acao]');
       if (!b) return;
       const { acao, id, nome } = b.dataset;
-      if (acao === 'excluir') {
-        if (!confirm(`Excluir a conta de ${nome}? Use apenas para e-mail digitado errado. Esta ação não pode ser desfeita.`)) return;
+      // Regra: conta que nunca acessou, quando desativada, é excluída automaticamente
+      if (acao === 'excluir' || (acao === 'desativar' && b.dataset.nunca === '1')) {
+        const msg = acao === 'excluir'
+          ? `Excluir a conta de ${nome}? Use apenas para e-mail digitado errado. Esta ação não pode ser desfeita.`
+          : `${nome} nunca acessou a plataforma. Ao desativar, a conta será excluída automaticamente. Confirma?`;
+        if (!confirm(msg)) return;
         const { data, error } = await sb.functions.invoke('excluir-conta', { body: { usuario_id: id } });
         if (error) { alert(await mensagemErro(error)); return; }
         if (data?.erro) { alert(data.erro); return; }
