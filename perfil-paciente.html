@@ -56,6 +56,13 @@
       #ficha table { font-size:11px; }
       #ficha dl.kv { grid-template-columns:140px 1fr; }
     }
+    .contato { border:1px dashed #cfc9c5; border-radius:8px; padding:10px; margin-bottom:10px; }
+    .contato .campos { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .contato .campos label { font-size:.85rem; }
+    .contato .campos input, .contato .campos select { margin-top:4px; }
+    .contato .campos .c-nome-box { grid-column:1 / -1; }
+    .btn-mais { background:transparent; border:1px solid var(--verde); color:var(--verde); border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:600; margin-bottom:8px; }
+    .btn-rem { background:transparent; border:0; color:#9a3a4a; cursor:pointer; font-size:.85rem; text-decoration:underline; }
   </style>
 </head>
 <body>
@@ -142,15 +149,9 @@
       <label>Data do cadastro *<input type="date" id="e-dcad" required></label>
       <label>Endereço<input id="e-endereco"></label>
 
-      <p class="sub"><strong>Contato principal</strong></p>
-      <div class="duplo">
-        <label>Nome *<input id="e-cont-nome" required></label>
-        <label>Parentesco<input id="e-cont-par"></label>
-      </div>
-      <label>Telefone *<input id="e-cont-tel" required></label>
-      <label>Contatos adicionais (uma linha por contato: nome | parentesco | telefone)
-        <textarea id="e-cont-add" rows="3"></textarea>
-      </label>
+      <p class="sub"><strong>Contatos</strong></p>
+      <div id="e-contatos"></div>
+      <button type="button" class="btn-mais" id="e-add-contato">+ Adicionar contato</button>
 
       <p class="sub"><strong>Comorbidades</strong></p>
       <div id="e-coms"></div>
@@ -260,7 +261,7 @@
       ]);
 
       $('contatos').innerHTML = S
-        ? `<dl class="kv">${kv([['Principal', S.contato_principal_nome], ['Parentesco', S.contato_principal_parentesco], ['Telefone', S.contato_principal_telefone]])}</dl>` + contatosAdicionais(S)
+        ? contatosHtml(S)
         : '<p class="restrito">Dados de contato restritos ao master e aos profissionais designados.</p>';
 
       const ultimo = VIS.filter((x) => x.situacao === 'concluida').map((x) => x.data_visita).sort().pop();
@@ -295,9 +296,7 @@
         `<h1>${esc(P.nome)}</h1><p>Ficha do paciente · impresso em ${new Date().toLocaleString('pt-BR')} por ${esc(me.nome)}</p>` +
         '<h2>Identificação</h2><dl class="kv">' + $('ident').innerHTML + '</dl>' +
         '<h2>Situação</h2><dl class="kv">' + $('situacao').innerHTML + '</dl>' +
-        '<h2>Contatos</h2>' + (S
-          ? '<dl class="kv">' + kv([['Principal', S.contato_principal_nome], ['Parentesco', S.contato_principal_parentesco], ['Telefone', S.contato_principal_telefone]]) + '</dl>' + contatosAdicionais(S)
-          : '<p>Restrito</p>') +
+        '<h2>Contatos</h2>' + (S ? contatosHtml(S) : '<p>Restrito</p>') +
         '<h2>Acompanhamento</h2><dl class="kv">' + kv([['Último atendimento', ultimo ? fmt(ultimo) : 'Nenhum']]) + '</dl>' +
         '<p><strong>Profissionais designados:</strong> ' + (DES.map((x) => `${esc(x.usuarios?.nome || '—')} (${esc(x.usuarios?.area || '—')})`).join('; ') || 'Nenhum') + '</p>' +
         '<h2>Comorbidades</h2>' + (COMS_PAC.length ? '<ul>' + COMS_PAC.map((x) => `<li>${esc(x.comorbidades?.nome || '—')}</li>`).join('') + '</ul>' : '<p>Nenhuma</p>') +
@@ -306,10 +305,81 @@
       $('conteudo').hidden = false;
     }
 
-    function contatosAdicionais(s) {
-      const lista = (s.contatos_adicionais || []).map((x) =>
-        `<li>${esc(x.nome || x.texto || '')}${x.parentesco ? ' · ' + esc(x.parentesco) : ''}${x.telefone ? ' · ' + esc(x.telefone) : ''}</li>`).join('');
-      return lista ? `<p class="sub"><strong>Adicionais</strong></p><ul class="lista">${lista}</ul>` : '';
+    const TIPO_TXT = { proprio: 'Próprio', familiar: 'Familiar', cuidador: 'Cuidador (ILPI, amigos e cuidadores)' };
+
+    function telFmt(t) {
+      const d = String(t || '').replace(/\D/g, '');
+      if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+      if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+      return t || '—';
+    }
+
+    function nomeDoContato(c) {
+      return c.tipo === 'proprio' ? P.nome : (c.nome || '—');
+    }
+
+    function contatosHtml(s) {
+      const lista = s.contatos_adicionais || [];
+      if (!lista.length) return '<p class="vazio">Nenhum contato cadastrado.</p>';
+      return `<ul class="lista">${lista.map((c) =>
+        `<li>${esc(nomeDoContato(c))} · ${esc(TIPO_TXT[c.tipo] || '—')}${c.parentesco ? ' (' + esc(c.parentesco) + ')' : ''} · ${esc(telFmt(c.telefone))}</li>`).join('')}</ul>`;
+    }
+
+    // Primeiro contato vira o "principal" (colunas contato_principal_*), usado pelas listas
+    function contatoPrincipal(c, nomePac) {
+      return { nome: c.tipo === 'proprio' ? nomePac : (c.nome || nomePac), parentesco: TIPO_TXT[c.tipo] || null, telefone: c.telefone };
+    }
+
+    function linhaContato(c = {}) {
+      const div = document.createElement('div');
+      div.className = 'contato';
+      div.innerHTML = `<div class="campos">
+          <label>Número (celular com DDD) *
+            <input class="c-tel" inputmode="numeric" placeholder="37999999999" value="${esc(c.telefone || '')}" required>
+          </label>
+          <label>Selecionar *
+            <select class="c-tipo" required>
+              <option value="">Selecione</option>
+              <option value="proprio">Próprio</option>
+              <option value="familiar">Familiar</option>
+              <option value="cuidador">Cuidador (ILPI, amigos e cuidadores)</option>
+            </select>
+          </label>
+          <label class="c-nome-box" hidden>Nome *
+            <input class="c-nome" placeholder="Nome do contato" value="${esc(c.nome || '')}">
+          </label>
+        </div>
+        <button type="button" class="btn-rem" style="margin-top:6px">Remover contato</button>`;
+      const tipo = div.querySelector('.c-tipo');
+      const box = div.querySelector('.c-nome-box');
+      const nome = div.querySelector('.c-nome');
+      tipo.value = c.tipo || '';
+      const aplica = () => {
+        const mostra = tipo.value === 'familiar' || tipo.value === 'cuidador';
+        box.hidden = !mostra;
+        nome.required = mostra;
+      };
+      tipo.addEventListener('change', aplica);
+      aplica();
+      div.querySelector('.btn-rem').addEventListener('click', () => div.remove());
+      $('e-contatos').appendChild(div);
+    }
+
+    // Lê as linhas do editor; devolve null (com mensagem) se algo estiver incompleto
+    function lerContatos() {
+      const out = [];
+      for (const c of document.querySelectorAll('#e-contatos .contato')) {
+        const tipo = c.querySelector('.c-tipo').value;
+        const nome = c.querySelector('.c-nome').value.trim();
+        const telefone = c.querySelector('.c-tel').value.replace(/\D/g, '');
+        if (!tipo || ![10, 11].includes(telefone.length) || ((tipo === 'familiar' || tipo === 'cuidador') && !nome)) {
+          $('e-msg').textContent = 'Confira os contatos: tipo, nome (quando não for Próprio) e celular com DDD (10 ou 11 dígitos).';
+          return null;
+        }
+        out.push({ tipo, nome: tipo === 'proprio' ? null : nome, telefone });
+      }
+      if (!out.length) { $('e-msg').textContent = 'Cadastre pelo menos um contato.'; return null; }
+      return out;
     }
 
     function comorbidadesHtml() {
@@ -328,10 +398,9 @@
       $('e-sede').value = P.sede_esf || '';
       $('e-dcad').value = P.data_cadastro || '';
       $('e-endereco').value = S?.endereco || '';
-      $('e-cont-nome').value = S?.contato_principal_nome || '';
-      $('e-cont-par').value = S?.contato_principal_parentesco || '';
-      $('e-cont-tel').value = S?.contato_principal_telefone || '';
-      $('e-cont-add').value = (S?.contatos_adicionais || []).map((x) => [x.nome || x.texto || '', x.parentesco || '', x.telefone || ''].join(' | ')).join('\n');
+      $('e-contatos').innerHTML = '';
+      const lista = S?.contatos_adicionais || [];
+      if (lista.length) lista.forEach((c) => linhaContato(c)); else linhaContato();
       const ativas = new Set(COMS_PAC.map((x) => x.comorbidade_id));
       $('e-coms').innerHTML = COMS_LISTA.map((c) =>
         `<label class="comchk"><input type="checkbox" class="com-chk" value="${c.id}" ${ativas.has(c.id) ? 'checked' : ''}> ${esc(c.nome)}</label>`).join('');
@@ -345,12 +414,15 @@
 
     $('btn-editar').addEventListener('click', abrirEditor);
     $('e-cancelar').addEventListener('click', () => $('editar').close());
+    $('e-add-contato').addEventListener('click', () => linhaContato());
 
     $('form-editar').addEventListener('submit', async (e) => {
       e.preventDefault();
       const m = $('e-msg');
       const dInt = $('e-int').value || null, motivo = $('e-motivo').value.trim() || null, dObito = $('e-obito').value || null;
       if (motivo && !dInt) { m.textContent = 'Informe a data da interrupção para registrar o motivo.'; return; }
+      const contatos = lerContatos();
+      if (!contatos) return;
       m.textContent = 'Salvando...';
       try {
         const { error: e1 } = await sb.from('pacientes').update({
@@ -360,14 +432,11 @@
         }).eq('id', P.id);
         if (e1) throw new Error('Dados do paciente: ' + e1.message);
 
-        const contatos = $('e-cont-add').value.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
-          const [nome = '', parentesco = '', telefone = ''] = l.split('|').map((x) => x.trim());
-          return { nome, parentesco, telefone };
-        });
+        const principal = contatoPrincipal(contatos[0], $('e-nome').value.trim());
         const { error: e2 } = await sb.from('pacientes_sensiveis').update({
           data_nascimento: $('e-nasc').value || null, endereco: $('e-endereco').value.trim() || null,
-          contato_principal_nome: $('e-cont-nome').value.trim(), contato_principal_parentesco: $('e-cont-par').value.trim() || null,
-          contato_principal_telefone: $('e-cont-tel').value.trim(), contatos_adicionais: contatos,
+          contato_principal_nome: principal.nome, contato_principal_parentesco: principal.parentesco,
+          contato_principal_telefone: principal.telefone, contatos_adicionais: contatos,
           observacao: $('e-obs').value.trim() || null,
         }).eq('paciente_id', P.id);
         if (e2) throw new Error('Dados pessoais: ' + e2.message);
