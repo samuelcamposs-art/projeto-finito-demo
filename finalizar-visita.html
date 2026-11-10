@@ -15,13 +15,12 @@
     .direita { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:flex-end; }
     .usuario { text-align:right; font-size:.95rem; font-weight:600; color:var(--roxo); }
     .linkbtn { color:var(--roxo); text-decoration:underline; font-weight:500; font-size:.9rem; }
-    main { max-width:560px; margin:24px auto; padding:0 16px 40px; }
+    main { max-width:640px; margin:24px auto; padding:0 16px 40px; }
     h1 { font-size:1.4rem; color:var(--roxo); }
     .painel { background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.08); border-top:4px solid var(--azul); }
     .resumo { background:var(--cinza); padding:12px; border-radius:8px; margin-bottom:16px; font-size:.95rem; }
     label.campo { display:block; font-size:.9rem; margin-bottom:14px; }
-    input[type="file"] { display:block; width:100%; margin-top:6px; }
-    #previa { display:none; max-width:100%; border-radius:8px; margin:8px 0 14px; border:1px solid #ddd; }
+    textarea { display:block; width:100%; margin-top:6px; padding:10px; border:1px solid #cfc9c5; border-radius:6px; font-size:1rem; font-family:inherit; min-height:180px; resize:vertical; }
     .aviso { font-size:.85rem; color:#6b6670; background:#f7f5f3; padding:10px; border-radius:6px; margin-bottom:14px; }
     .btn { width:100%; padding:11px; border:0; border-radius:6px; background:var(--verde); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
     .btn:disabled { background:#b9c8bf; cursor:not-allowed; }
@@ -47,12 +46,11 @@
       <div class="resumo" id="resumo">Carregando visita...</div>
 
       <form id="form" hidden>
-        <label class="campo">Foto da folha de evolução *
-          <input type="file" id="foto" accept="image/*" capture="environment" required>
+        <label class="campo">Evolução da visita *
+          <textarea id="texto" required placeholder="Descreva a visita: estado do paciente, condutas e encaminhamentos."></textarea>
         </label>
-        <img id="previa" alt="Prévia da evolução">
-        <p class="aviso">A evolução só é registrada como realizada após o envio. O armazenamento da foto será configurado depois que o local de guarda for definido.</p>
-        <button class="btn" type="submit" id="enviar" disabled>Enviar evolução e concluir visita</button>
+        <p class="aviso">A evolução fica registrada no histórico do paciente e não é apagada automaticamente. Ao salvar, a visita é concluída.</p>
+        <button class="btn" type="submit" id="enviar">Salvar evolução e concluir visita</button>
         <p class="msg" id="msg" role="alert"></p>
       </form>
 
@@ -72,7 +70,7 @@
 
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
-      if (!session || !session.user.user_metadata?.senha_definida) { location.href = 'index.html'; return; }
+      if (!session) { location.href = 'index.html'; return; }
       const { data: u } = await sb.from('usuarios').select('id,nome,papel,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
       if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
       if (u.papel !== 'prestador') { location.href = 'dashboard.html'; return; }
@@ -92,25 +90,17 @@
       $('form').hidden = false;
     })();
 
-    $('foto').addEventListener('change', () => {
-      const f = $('foto').files[0];
-      if (!f) { $('previa').style.display = 'none'; $('enviar').disabled = true; return; }
-      $('previa').src = URL.createObjectURL(f);
-      $('previa').style.display = 'block';
-      $('enviar').disabled = false;
-    });
-
     $('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const m = $('msg');
+      const texto = $('texto').value.trim();
       if (!visita) return;
+      if (!texto) { m.textContent = 'Escreva a evolução antes de salvar.'; return; }
       $('enviar').disabled = true;
-      m.textContent = 'Enviando...';
+      m.textContent = 'Salvando...';
 
-      // PENDENTE: gravar o arquivo da foto quando o local de armazenamento for definido.
-      // Até lá, registra-se apenas a evolução (metadados), o que conclui a visita.
       const { error } = await sb.from('evolucoes').insert({
-        cidade_id: eu.cidade_id, visita_id: visita.id, paciente_id: visita.paciente_id, prestador_id: eu.id,
+        cidade_id: eu.cidade_id, visita_id: visita.id, paciente_id: visita.paciente_id, prestador_id: eu.id, texto,
       });
       if (error) {
         m.textContent = 'Erro ao concluir a visita: ' + error.message;
