@@ -24,9 +24,6 @@
     .btn-sec { width:auto; padding:8px 14px; background:var(--roxo); color:#fff; border:0; border-radius:6px; font-weight:600; cursor:pointer; font-size:.9rem; }
     .btn-peq { width:auto; padding:6px 10px; font-size:.82rem; border:0; border-radius:6px; color:#fff; font-weight:600; cursor:pointer; }
     .msg { min-height:1.2em; font-size:.9rem; margin-top:12px; text-align:center; }
-    #resultado { margin-top:16px; padding:14px; background:var(--cinza); border-radius:8px; font-size:.92rem; }
-    .linha-link { display:flex; gap:8px; margin-top:8px; }
-    .linha-link input { margin-top:0; font-size:.85rem; }
     .acima { display:flex; justify-content:space-between; align-items:center; margin-top:28px; }
     dialog { border:0; border-radius:12px; padding:20px; width:min(860px,94vw); max-height:86vh; box-shadow:0 10px 40px rgba(0,0,0,.25); }
     dialog::backdrop { background:rgba(59,58,64,.5); }
@@ -41,6 +38,7 @@
     .vazio { color:#888; font-size:.9rem; }
     .dialog-acoes { display:flex; justify-content:flex-end; margin-top:16px; }
     .cinza-txt { color:#6b6670; font-size:.85rem; }
+    .aviso-senha { margin:12px 0 0; padding:12px; background:var(--cinza); border-radius:8px; font-size:.92rem; }
   </style>
 </head>
 <body>
@@ -81,18 +79,10 @@
         <label id="lbl-sede" hidden>Número da sede *
           <input type="number" id="sede" min="1" step="1" placeholder="Ex.: 1">
         </label>
-        <button class="btn" type="submit" id="enviar">Cadastrar e gerar link de acesso</button>
+        <button class="btn" type="submit" id="enviar">Cadastrar acesso</button>
         <p class="msg" id="msg" role="alert"></p>
       </form>
-
-      <div id="resultado" hidden>
-        <p style="margin:0 0 6px">Envie este link à pessoa. Ela abre o link, define a própria senha e entra no sistema. O link tem prazo e serve uma única vez.</p>
-        <div class="linha-link">
-          <input id="link" readonly>
-          <button class="btn-sec" type="button" id="copiar">Copiar</button>
-        </div>
-        <p id="aviso" style="margin:8px 0 0;color:#7a2030"></p>
-      </div>
+      <p class="aviso-senha">Todo acesso novo entra com a senha inicial <strong>12345678</strong>. A pessoa pode trocá-la em "Esqueci minha senha", na tela de entrada.</p>
     </div>
 
     <div class="acima">
@@ -107,24 +97,17 @@
       <select id="filtro-conta" style="width:auto;margin-top:0">
         <option value="">Todos os acessos</option>
         <option value="ativo">Ativos</option>
-        <option value="pendente">Aguardando 1º acesso</option>
+        <option value="pendente">Nunca acessaram</option>
         <option value="desativado">Desativados</option>
       </select>
     </div>
     <div id="contas-corpo"></div>
-    <div id="link-box" hidden style="margin-top:14px;padding:12px;background:var(--cinza);border-radius:8px">
-      <p style="margin:0 0 6px;font-size:.9rem">Link para definir a senha de <strong id="link-nome"></strong>:</p>
-      <div class="linha-link">
-        <input id="link-contas" readonly>
-        <button class="btn-sec" type="button" id="copiar-contas">Copiar</button>
-      </div>
-    </div>
     <div class="dialog-acoes"><button class="btn-sec" type="button" id="fechar-contas">Fechar</button></div>
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
-    // Chave pública (publishable). A criação e o reenvio de link são feitos pelas funções do servidor, que validam o master.
+    // Chave pública (publishable). A criação e a exclusão são feitas pelas funções do servidor, que validam o master.
     const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
 
     const $ = (id) => document.getElementById(id);
@@ -134,6 +117,8 @@
 
     const rotulo = (u) => u.papel === 'master' ? 'Master' : u.papel === 'esf' ? 'ESF' : 'Profissional';
     const areaTxt = (u) => u.papel === 'esf' ? `Sede ${u.sede_esf}` : (u.area || '—');
+    // Master e profissional que nunca acessaram podem ser excluídos (e-mail digitado errado)
+    const podeExcluir = (u) => u.id !== eu.id && (u.papel === 'esf' || !u.primeiro_acesso_feito);
 
     async function carregarAreas() {
       const { data } = await sb.from('areas_atuacao').select('nome').order('nome');
@@ -175,7 +160,6 @@
 
       $('enviar').disabled = true;
       m.textContent = 'Cadastrando...';
-      $('resultado').hidden = true;
       const { data, error } = await sb.functions.invoke('criar-profissional', {
         body: { nome: $('nome-prof').value.trim(), email: $('email').value.trim(), tipo, area, sede },
       });
@@ -184,18 +168,11 @@
       if (error) { m.textContent = await mensagemErro(error); return; }
       if (data?.erro) { m.textContent = data.erro; return; }
 
-      m.textContent = 'Acesso cadastrado.';
-      if (data.link) { $('link').value = data.link; $('resultado').hidden = false; }
-      $('aviso').textContent = data.aviso || '';
+      m.textContent = 'Acesso cadastrado. Senha inicial: 12345678.';
       e.target.reset();
       ajustarCampos();
       $('lbl-outra').hidden = true;
       await carregarAreas();
-    });
-
-    $('copiar').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText($('link').value); $('copiar').textContent = 'Copiado'; }
-      catch { $('link').select(); }
     });
 
     // Contas de acesso
@@ -221,66 +198,55 @@
       $('contas-corpo').innerHTML = `<table>
         <tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Área</th><th>Acesso</th><th></th></tr>` +
         data.map((u) => {
-          const eEu = u.id === eu.id;
           const acesso = !u.ativo ? '<span class="tag tag-off">Desativado</span>'
-            : u.primeiro_acesso_feito ? '<span class="tag tag-ok">Ativo</span>'
-            : '<span class="tag tag-pend">Aguardando 1º acesso</span>';
+            : u.primeiro_acesso_feito ? '<span class="tag tag-ok">Já acessou</span>'
+            : '<span class="tag tag-pend">Nunca acessou</span>';
           let acoes = '';
-          if (!eEu) {
-            if (u.ativo && !u.primeiro_acesso_feito) acoes += `<button class="btn-peq" style="background:#6b6670" data-acao="link" data-id="${u.id}" data-nome="${esc(u.nome)}">Copiar link de senha</button> `;
-            acoes += u.ativo
+          if (u.id === eu.id) {
+            acoes = '<span class="cinza-txt">(sua conta)</span>';
+          } else {
+            acoes = u.ativo
               ? `<button class="btn-peq" style="background:#9a3a4a" data-acao="desativar" data-id="${u.id}" data-nome="${esc(u.nome)}">Desativar</button>`
               : `<button class="btn-peq" style="background:var(--verde)" data-acao="reativar" data-id="${u.id}" data-nome="${esc(u.nome)}">Reativar</button>`;
-          } else {
-            acoes = '<span class="cinza-txt">(sua conta)</span>';
+            if (podeExcluir(u)) acoes += ` <button class="btn-peq" style="background:#7a2030" data-acao="excluir" data-id="${u.id}" data-nome="${esc(u.nome)}">Excluir</button>`;
           }
           return `<tr><td>${esc(u.nome)}</td><td>${esc(u.email)}</td><td>${rotulo(u)}</td><td>${esc(areaTxt(u))}</td><td>${acesso}</td><td>${acoes}</td></tr>`;
         }).join('') + '</table>';
     }
 
     $('abrir-contas').addEventListener('click', async () => {
-      $('link-box').hidden = true;
       await carregarContas();
       $('contas').showModal();
     });
     $('fechar-contas').addEventListener('click', () => $('contas').close());
-    $('copiar-contas').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText($('link-contas').value); $('copiar-contas').textContent = 'Copiado'; }
-      catch { $('link-contas').select(); }
-    });
 
     $('contas-corpo').addEventListener('click', async (e) => {
       const b = e.target.closest('[data-acao]');
       if (!b) return;
       const { acao, id, nome } = b.dataset;
-      if (acao === 'link') { b.disabled = true; await gerarLink(id, nome); b.disabled = false; return; }
+      if (acao === 'excluir') {
+        if (!confirm(`Excluir a conta de ${nome}? Use apenas para e-mail digitado errado. Esta ação não pode ser desfeita.`)) return;
+        const { data, error } = await sb.functions.invoke('excluir-conta', { body: { usuario_id: id } });
+        if (error) { alert(await mensagemErro(error)); return; }
+        if (data?.erro) { alert(data.erro); return; }
+        await carregarContas();
+        return;
+      }
       if (acao === 'desativar' || acao === 'reativar') {
         const ativar = acao === 'reativar';
         if (!ativar && !confirm(`Desativar o acesso de ${nome}? O login deixa de funcionar. O histórico continua visível ao master.`)) return;
         const { error } = await sb.from('usuarios').update({ ativo: ativar }).eq('id', id);
         if (error) { alert('Não foi possível alterar: ' + error.message); return; }
         await carregarContas();
-        // Ao reativar, o link de acesso fica disponível novamente
-        if (ativar) await gerarLink(id, nome);
       }
     });
-
-    async function gerarLink(id, nome) {
-      const { data, error } = await sb.functions.invoke('reenviar-link', { body: { id } });
-      if (error) { alert(await mensagemErro(error)); return; }
-      if (data?.erro) { alert(data.erro); return; }
-      $('link-nome').textContent = nome;
-      $('link-contas').value = data.link;
-      $('copiar-contas').textContent = 'Copiar';
-      $('link-box').hidden = false;
-    }
 
     $('busca-conta').addEventListener('input', desenharContas);
     $('filtro-conta').addEventListener('change', desenharContas);
 
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
-      if (!session || !session.user.user_metadata?.senha_definida) { location.href = 'index.html'; return; }
+      if (!session) { location.href = 'index.html'; return; }
       const { data: u } = await sb.from('usuarios').select('id,nome,papel').eq('auth_uid', session.user.id).maybeSingle();
       if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
       if (u.papel !== 'master') { location.href = 'dashboard.html'; return; }
