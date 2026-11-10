@@ -126,9 +126,31 @@
         ? `Reativar ${b.dataset.nome}? Apenas o master volta a ficar ativo; os demais acessos continuam como estavam.`
         : `Desativar ${b.dataset.nome}? Todos os acessos da cidade serão desativados. Os dados serão mantidos.`;
       if (!confirm(pergunta)) return;
-      const { error } = await sb.rpc('alterar_status_cidade', { p_cidade: b.dataset.id, p_ativa: ativar });
+      if (ativar) {
+        // Reativar: reativa a cidade e gera um novo link para o master definir a senha
+        $('msg-lista').textContent = 'Reativando...';
+        const { data, error } = await sb.functions.invoke('reativar-cidade', { body: { cidade_id: b.dataset.id } });
+        if (error) {
+          let texto = 'Não foi possível reativar a cidade.';
+          try { const j = await error.context.json(); texto = j.erro || texto; } catch (_) {}
+          $('msg-lista').textContent = texto;
+          return;
+        }
+        await carregarCidades();
+        if (data?.link) {
+          $('link').value = data.link;
+          $('link-box').hidden = false;
+          $('link-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          $('msg').textContent = `Cidade reativada. Envie o novo link a ${data.master || 'o master'} para criar a senha.`;
+          $('msg-lista').textContent = 'Cidade reativada. Veja o novo link acima.';
+        } else {
+          $('msg-lista').textContent = data?.aviso || 'Cidade reativada.';
+        }
+        return;
+      }
+      const { error } = await sb.rpc('alterar_status_cidade', { p_cidade: b.dataset.id, p_ativa: false });
       if (error) { $('msg-lista').textContent = 'Não foi possível alterar: ' + error.message; return; }
-      $('msg-lista').textContent = ativar ? 'Cidade reativada.' : 'Cidade desativada.';
+      $('msg-lista').textContent = 'Cidade desativada.';
       await carregarCidades();
     });
 
