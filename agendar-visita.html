@@ -221,7 +221,7 @@
 
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
-      if (!session || !session.user.user_metadata?.senha_definida) { location.href = 'index.html'; return; }
+      if (!session) { location.href = 'index.html'; return; }
       const { data: u } = await sb.from('usuarios').select('id,nome,papel,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
       if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
       if (u.papel !== 'prestador') { location.href = 'dashboard.html'; return; }
