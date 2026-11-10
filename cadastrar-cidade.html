@@ -102,10 +102,10 @@
           `<tr><td>${esc(c.nome)} (${esc(c.uf)})</td>` +
           `<td>${esc(c.master_nome || '—')}</td>` +
           `<td>${esc(c.master_email || '—')}</td>` +
-          `<td>${c.primeiro_acesso_feito ? 'Já acessou' : 'Aguardando primeiro acesso'}</td>` +
+          `<td>${c.primeiro_acesso_feito ? 'Senha criada' : 'Aguardando criação de senha'}</td>` +
           `<td>${c.ativa ? 'Ativa' : '<strong>Desativada</strong>'}</td>` +
           `<td>${c.ativa
-            ? `<button class="btn-pequeno b-desativar" data-id="${c.id}" data-acao="desativar" data-nome="${esc(c.nome)}">Desativar</button>`
+            ? `${!c.primeiro_acesso_feito && c.master_email ? `<button class="btn-pequeno b-novolink" data-id="${c.id}" data-acao="novolink" data-nome="${esc(c.nome)}">Novo link</button> ` : ''}<button class="btn-pequeno b-desativar" data-id="${c.id}" data-acao="desativar" data-nome="${esc(c.nome)}">Desativar</button>`
             : `<button class="btn-pequeno b-reativar" data-id="${c.id}" data-acao="reativar" data-nome="${esc(c.nome)}">Reativar</button>`}</td></tr>`).join('') +
         '</table>';
     }
@@ -121,6 +121,22 @@
     $('lista').addEventListener('click', async (e) => {
       const b = e.target.closest('[data-acao]');
       if (!b) return;
+      if (b.dataset.acao === 'novolink') {
+        // Master que ainda não criou a senha: gera um novo link de acesso
+        $('msg-lista').textContent = 'Gerando link...';
+        const { data, error } = await sb.functions.invoke('novo-link-master', { body: { cidade_id: b.dataset.id } });
+        if (error) {
+          let texto = 'Não foi possível gerar o link.';
+          try { const j = await error.context.json(); texto = j.erro || texto; } catch (_) {}
+          $('msg-lista').textContent = texto;
+          return;
+        }
+        $('link').value = data.link;
+        $('link-box').hidden = false;
+        $('link-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        $('msg-lista').textContent = `Novo link gerado para ${data.master}. Envie-o ao master para criar a senha.`;
+        return;
+      }
       const ativar = b.dataset.acao === 'reativar';
       const pergunta = ativar
         ? `Reativar ${b.dataset.nome}? Apenas o master volta a ficar ativo; os demais acessos continuam como estavam.`
