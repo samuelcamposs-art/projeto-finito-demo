@@ -30,7 +30,7 @@
     .contato .campos { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .contato .campos input, .contato .campos select { margin-top:4px; }
     .contato .campos label { font-size:.85rem; }
-    .contato .campos .c-nome-box { grid-column:1 / -1; }
+    .contato .campos .c-nome-box, .contato .campos .c-par-box { grid-column:1 / -1; }
     .btn-mais { background:transparent; border:1px solid var(--verde); color:var(--verde); border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:600; }
     .btn-rem { background:transparent; border:0; color:#9a3a4a; cursor:pointer; font-size:.85rem; text-decoration:underline; }
     .presta { display:block; font-weight:normal; margin:6px 0; font-size:.95rem; }
@@ -169,15 +169,23 @@
           <label class="c-nome-box" hidden>Nome *
             <input class="c-nome" placeholder="Nome do contato">
           </label>
+          <label class="c-par-box" hidden>Parentesco *
+            <input class="c-par" placeholder="Ex.: filha, nora">
+          </label>
         </div>
         <button type="button" class="btn-rem" style="margin-top:6px">Remover contato</button>`;
       const tipo = div.querySelector('.c-tipo');
       const box = div.querySelector('.c-nome-box');
       const nome = div.querySelector('.c-nome');
+      const parBox = div.querySelector('.c-par-box');
+      const par = div.querySelector('.c-par');
       tipo.addEventListener('change', () => {
         const mostra = tipo.value === 'familiar' || tipo.value === 'cuidador';
+        const familiar = tipo.value === 'familiar';
         box.hidden = !mostra;
         nome.required = mostra;
+        parBox.hidden = !familiar;
+        par.required = familiar;
       });
       div.querySelector('.btn-rem').addEventListener('click', () => div.remove());
       $('contatos').appendChild(div);
@@ -228,11 +236,17 @@
       const contatos = [...document.querySelectorAll('.contato')].map((c) => {
         const tipo = c.querySelector('.c-tipo').value;
         const nome = c.querySelector('.c-nome').value.trim();
-        return { tipo, nome: tipo === 'proprio' ? null : (nome || null), telefone: c.querySelector('.c-tel').value.replace(/\D/g, '') };
+        const par = c.querySelector('.c-par').value.trim();
+        return {
+          tipo,
+          nome: tipo === 'proprio' ? null : (nome || null),
+          parentesco: tipo === 'familiar' ? (par || null) : null,
+          telefone: c.querySelector('.c-tel').value.replace(/\D/g, ''),
+        };
       });
       if (!contatos.length) { m.textContent = 'Cadastre pelo menos um contato.'; return; }
-      const invalido = contatos.find((c) => !c.tipo || ![10, 11].includes(c.telefone.length) || (c.tipo !== 'proprio' && !c.nome));
-      if (invalido) { m.textContent = 'Confira os contatos: selecione o tipo, informe o nome (quando não for Próprio) e o celular com DDD (10 ou 11 dígitos).'; return; }
+      const invalido = contatos.find((c) => !c.tipo || ![10, 11].includes(c.telefone.length) || (c.tipo !== 'proprio' && !c.nome) || (c.tipo === 'familiar' && !c.parentesco));
+      if (invalido) { m.textContent = 'Confira os contatos: selecione o tipo, informe o nome (quando não for Próprio), o parentesco (quando for Familiar) e o celular com DDD (10 ou 11 dígitos).'; return; }
 
       m.textContent = 'Salvando...';
       try {
@@ -262,7 +276,7 @@
           data_nascimento: $('nasc').value,
           endereco: $('endereco').value.trim() || null,
           contato_principal_nome: contatos[0].nome || nomeCompleto,
-          contato_principal_parentesco: TIPO_TXT[contatos[0].tipo],
+          contato_principal_parentesco: contatos[0].parentesco,
           contato_principal_telefone: contatos[0].telefone,
           contatos_adicionais: contatos,
           observacao: $('obs').value.trim() || null,
