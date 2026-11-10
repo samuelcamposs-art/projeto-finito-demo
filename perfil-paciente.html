@@ -60,7 +60,7 @@
     .contato .campos { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .contato .campos label { font-size:.85rem; }
     .contato .campos input, .contato .campos select { margin-top:4px; }
-    .contato .campos .c-nome-box { grid-column:1 / -1; }
+    .contato .campos .c-nome-box, .contato .campos .c-par-box { grid-column:1 / -1; }
     .btn-mais { background:transparent; border:1px solid var(--verde); color:var(--verde); border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:600; margin-bottom:8px; }
     .btn-rem { background:transparent; border:0; color:#9a3a4a; cursor:pointer; font-size:.85rem; text-decoration:underline; }
   </style>
@@ -321,13 +321,15 @@
     function contatosHtml(s) {
       const lista = s.contatos_adicionais || [];
       if (!lista.length) return '<p class="vazio">Nenhum contato cadastrado.</p>';
-      return `<ul class="lista">${lista.map((c) =>
-        `<li>${esc(nomeDoContato(c))} · ${esc(TIPO_TXT[c.tipo] || '—')}${c.parentesco ? ' (' + esc(c.parentesco) + ')' : ''} · ${esc(telFmt(c.telefone))}</li>`).join('')}</ul>`;
+      return `<ul class="lista">${lista.map((c) => {
+        const papel = c.tipo === 'familiar' ? (c.parentesco || 'Familiar') : (TIPO_TXT[c.tipo] || '—');
+        return `<li>${esc(nomeDoContato(c))} · ${esc(papel)} · ${esc(telFmt(c.telefone))}</li>`;
+      }).join('')}</ul>`;
     }
 
     // Primeiro contato vira o "principal" (colunas contato_principal_*), usado pelas listas
     function contatoPrincipal(c, nomePac) {
-      return { nome: c.tipo === 'proprio' ? nomePac : (c.nome || nomePac), parentesco: TIPO_TXT[c.tipo] || null, telefone: c.telefone };
+      return { nome: c.tipo === 'proprio' ? nomePac : (c.nome || nomePac), parentesco: c.tipo === 'familiar' ? (c.parentesco || null) : null, telefone: c.telefone };
     }
 
     function linhaContato(c = {}) {
@@ -348,16 +350,24 @@
           <label class="c-nome-box" hidden>Nome *
             <input class="c-nome" placeholder="Nome do contato" value="${esc(c.nome || '')}">
           </label>
+          <label class="c-par-box" hidden>Parentesco *
+            <input class="c-par" placeholder="Ex.: filha, nora" value="${esc(c.parentesco || '')}">
+          </label>
         </div>
         <button type="button" class="btn-rem" style="margin-top:6px">Remover contato</button>`;
       const tipo = div.querySelector('.c-tipo');
       const box = div.querySelector('.c-nome-box');
       const nome = div.querySelector('.c-nome');
+      const parBox = div.querySelector('.c-par-box');
+      const par = div.querySelector('.c-par');
       tipo.value = c.tipo || '';
       const aplica = () => {
         const mostra = tipo.value === 'familiar' || tipo.value === 'cuidador';
+        const familiar = tipo.value === 'familiar';
         box.hidden = !mostra;
         nome.required = mostra;
+        parBox.hidden = !familiar;
+        par.required = familiar;
       };
       tipo.addEventListener('change', aplica);
       aplica();
@@ -371,12 +381,13 @@
       for (const c of document.querySelectorAll('#e-contatos .contato')) {
         const tipo = c.querySelector('.c-tipo').value;
         const nome = c.querySelector('.c-nome').value.trim();
+        const parentesco = c.querySelector('.c-par').value.trim();
         const telefone = c.querySelector('.c-tel').value.replace(/\D/g, '');
-        if (!tipo || ![10, 11].includes(telefone.length) || ((tipo === 'familiar' || tipo === 'cuidador') && !nome)) {
-          $('e-msg').textContent = 'Confira os contatos: tipo, nome (quando não for Próprio) e celular com DDD (10 ou 11 dígitos).';
+        if (!tipo || ![10, 11].includes(telefone.length) || ((tipo === 'familiar' || tipo === 'cuidador') && !nome) || (tipo === 'familiar' && !parentesco)) {
+          $('e-msg').textContent = 'Confira os contatos: tipo, nome (quando não for Próprio), parentesco (quando for Familiar) e celular com DDD (10 ou 11 dígitos).';
           return null;
         }
-        out.push({ tipo, nome: tipo === 'proprio' ? null : nome, telefone });
+        out.push({ tipo, nome: tipo === 'proprio' ? null : nome, parentesco: tipo === 'familiar' ? parentesco : null, telefone });
       }
       if (!out.length) { $('e-msg').textContent = 'Cadastre pelo menos um contato.'; return null; }
       return out;
