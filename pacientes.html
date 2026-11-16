@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projeto Finito: pacientes</title>
+  <style>
+    [hidden] { display:none !important; }
+    :root { --verde:#6EA67F; --roxo:#9484B3; --azul:#BEDBE9; --cinza:#EAE6E3; --texto:#3B3A40; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--cinza); color:var(--texto); }
+    .banner { background:var(--roxo); color:#fff; text-align:center; padding:8px; font-weight:700; font-size:.85rem; letter-spacing:.04em; }
+    header.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 24px; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); flex-wrap:wrap; }
+    header.topo img { height:56px; }
+    .direita { display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:flex-end; }
+    .usuario { text-align:right; font-size:.95rem; font-weight:600; color:var(--roxo); }
+    .linkbtn { color:var(--roxo); text-decoration:underline; font-weight:500; font-size:.9rem; }
+    .sair { background:none; border:0; color:var(--roxo); text-decoration:underline; font-size:.9rem; cursor:pointer; font-family:inherit; }
+    main { max-width:960px; margin:24px auto; padding:0 16px 40px; }
+    h1 { font-size:1.4rem; color:var(--roxo); margin:0 0 12px; }
+    .filtros { display:grid; grid-template-columns:2fr repeat(3,1fr); gap:10px; background:#fff; padding:16px; border-radius:12px; box-shadow:0 2px 8px rgba(59,58,64,.08); border-top:4px solid var(--azul); margin-bottom:12px; }
+    .filtros label { font-size:.85rem; display:block; }
+    .filtros input, .filtros select { display:block; width:100%; margin-top:4px; padding:9px; border:1px solid #cfc9c5; border-radius:6px; font-size:.95rem; background:#fff; font-family:inherit; }
+    @media (max-width:700px) { .filtros { grid-template-columns:1fr; } }
+    .contagem { font-size:.9rem; color:#6b6670; margin:6px 2px 10px; }
+    .lista { display:grid; gap:8px; }
+    a.item { display:block; background:#fff; border-radius:10px; padding:12px 14px; text-decoration:none; color:inherit; box-shadow:0 1px 4px rgba(59,58,64,.08); border-left:4px solid var(--azul); }
+    a.item:hover { border-left-color:var(--roxo); }
+    .l1 { display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; align-items:baseline; }
+    .nome { font-weight:600; overflow-wrap:anywhere; }
+    .meta { font-size:.85rem; color:#6b6670; margin-top:4px; overflow-wrap:anywhere; }
+    .tag { display:inline-block; padding:2px 8px; border-radius:999px; font-size:.75rem; font-weight:600; background:var(--cinza); white-space:nowrap; }
+    .st-ativo { background:#d8eedf; color:#2d5a3b; }
+    .st-em_espera { background:#e6e0f2; color:#4d3f74; }
+    .st-interrompido { background:#f6e7c8; color:#7a5a12; }
+    .st-falecido { background:#e5e1df; color:#4d4a50; }
+    .vazio { background:#fff; padding:16px; border-radius:10px; text-align:center; color:#6b6670; }
+    .msg { min-height:1.2em; font-size:.9rem; text-align:center; color:#9a3a4a; }
+  </style>
+</head>
+<body>
+  <div class="banner">Cuidado Paliativo Multiprofissional</div>
+
+  <header class="topo">
+    <img src="logo.png" alt="Projeto Finito">
+    <div class="direita">
+      <a class="linkbtn" href="dashboard.html">Voltar ao painel</a>
+      <div class="usuario" id="nome"></div>
+      <button class="sair" id="sair">Sair</button>
+    </div>
+  </header>
+
+  <main>
+    <h1>Pacientes</h1>
+
+    <section class="filtros">
+      <label>Buscar em qualquer dado
+        <input id="busca" placeholder="Nome, endereço, contato, comorbidade, bairro..." autocomplete="off">
+      </label>
+      <label>Status
+        <select id="f-status">
+          <option value="">Todos</option>
+          <option value="ativo">Ativos</option>
+          <option value="em_espera">Em espera</option>
+          <option value="interrompido">Interrompidos</option>
+          <option value="falecido">Falecidos</option>
+        </select>
+      </label>
+      <label id="box-psf" hidden>PSF
+        <select id="f-psf"><option value="">Todos</option></select>
+      </label>
+      <label id="box-area" hidden>Área de atuação
+        <select id="f-area"><option value="">Todas</option></select>
+      </label>
+    </section>
+
+    <p class="contagem" id="contagem"></p>
+    <div class="lista" id="lista"></div>
+    <p class="msg" id="msg" role="alert"></p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    // Chave pública (publishable). O RLS do banco define quais pacientes cada perfil enxerga.
+    const sb = supabase.createClient('https://lkfmaienspuiufqhmmag.supabase.co', 'sb_publishable_oJp9-Q0gxwe7o5izcO7BGQ_1_7zmS3z');
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const fmt = (iso) => (iso ? String(iso).slice(0, 10).split('-').reverse().join('/') : '');
+    const STATUS = { ativo: 'Ativo', em_espera: 'Em espera', interrompido: 'Interrompido', falecido: 'Falecido' };
+    const SEXO = { feminino: 'Feminino', masculino: 'Masculino', nao_informado: 'Não informado' };
+
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { location.href = 'index.html'; return; }
+      const { data: u } = await sb.from('usuarios').select('id,nome,papel,area,sede_esf,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
+      if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
+      if (u.papel === 'plataforma') { location.href = 'cadastrar-cidade.html'; return; }
+      $('nome').textContent = u.nome;
+      $('sair').addEventListener('click', async () => { await sb.auth.signOut(); location.href = 'index.html'; });
+
+      // PSF: master e profissional. Área: master e ESF.
+      if (u.papel === 'master' || u.papel === 'prestador') $('box-psf').hidden = false;
+      if (u.papel === 'master' || u.papel === 'esf') $('box-area').hidden = false;
+      const mostraAreas = u.papel === 'master' || u.papel === 'esf';
+
+      const [pacs, ars] = await Promise.all([
+        sb.from('pacientes')
+          .select('id,numero,nome,sexo,bairro,status,sede_esf,data_inicio,pacientes_sensiveis(data_nascimento,endereco,observacao,contatos_adicionais),paciente_comorbidades(excluido_em,comorbidades(nome))')
+          .is('excluido_em', null).order('nome'),
+        sb.rpc('areas_dos_pacientes'),
+      ]);
+      if (pacs.error) { $('msg').textContent = 'Não foi possível carregar os pacientes: ' + pacs.error.message; return; }
+
+      const areasPor = new Map();
+      for (const a of (ars.data || [])) {
+        if (!areasPor.has(a.paciente_id)) areasPor.set(a.paciente_id, new Set());
+        areasPor.get(a.paciente_id).add(a.area);
+      }
+
+      const ROWS = (pacs.data || []).map((p) => {
+        const s = Array.isArray(p.pacientes_sensiveis) ? p.pacientes_sensiveis[0] : p.pacientes_sensiveis;
+        const coms = (p.paciente_comorbidades || []).filter((c) => !c.excluido_em && c.comorbidades).map((c) => c.comorbidades.nome);
+        const areas = [...(areasPor.get(p.id) || [])].sort();
+        const contatos = s?.contatos_adicionais || [];
+        const texto = norm([
+          p.numero, p.nome, SEXO[p.sexo], p.bairro, STATUS[p.status], p.sede_esf, 'psf ' + p.sede_esf,
+          fmt(p.data_inicio), fmt(s?.data_nascimento), s?.endereco, s?.observacao,
+          coms.join(' '), areas.join(' '),
+          contatos.map((c) => [c.nome, c.parentesco, c.telefone, c.tipo].join(' ')).join(' '),
+        ].join(' '));
+        return { p, coms, areas, texto };
+      });
+
+      // Opções dos filtros, a partir do que a pessoa de fato enxerga
+      const psfs = [...new Set(ROWS.map((r) => r.p.sede_esf).filter((x) => x != null))].sort((a, b) => a - b);
+      $('f-psf').insertAdjacentHTML('beforeend', psfs.map((x) => `<option value="${x}">PSF ${x}</option>`).join(''));
+      const areas = [...new Set(ROWS.flatMap((r) => r.areas))].sort();
+      $('f-area').insertAdjacentHTML('beforeend', areas.map((x) => `<option value="${esc(x)}">${esc(x)}</option>`).join(''));
+
+      function desenhar() {
+        const termos = norm($('busca').value.trim()).split(/\s+/).filter(Boolean);
+        const st = $('f-status').value, psf = $('f-psf').value, ar = $('f-area').value;
+        const lista = ROWS.filter((r) =>
+          (!st || r.p.status === st) &&
+          (!psf || String(r.p.sede_esf) === psf) &&
+          (!ar || r.areas.includes(ar)) &&
+          termos.every((t) => r.texto.includes(t)));
+        $('contagem').textContent = `${lista.length} de ${ROWS.length} paciente(s)`;
+        $('lista').innerHTML = lista.map((r) => `
+          <a class="item" href="perfil-paciente.html?id=${encodeURIComponent(r.p.id)}">
+            <div class="l1">
+              <span class="nome">Nº ${esc(r.p.numero)} · ${esc(r.p.nome)}</span>
+              <span class="tag st-${esc(r.p.status)}">${esc(STATUS[r.p.status] || '')}</span>
+            </div>
+            <div class="meta">${r.p.sede_esf ? 'PSF ' + esc(r.p.sede_esf) + ' · ' : ''}${esc(r.p.bairro || '—')}${r.coms.length ? ' · ' + esc(r.coms.join(', ')) : ''}</div>
+            ${mostraAreas && r.areas.length ? `<div class="meta">Áreas: ${esc(r.areas.join(', '))}</div>` : ''}
+          </a>`).join('') || '<p class="vazio">Nenhum paciente encontrado com esses filtros.</p>';
+      }
+
+      ['busca', 'f-status', 'f-psf', 'f-area'].forEach((id) => $(id).addEventListener('input', desenhar));
+      ['f-status', 'f-psf', 'f-area'].forEach((id) => $(id).addEventListener('change', desenhar));
+      desenhar();
+    })();
+  </script>
+</body>
+</html>

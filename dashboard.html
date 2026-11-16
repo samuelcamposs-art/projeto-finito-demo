@@ -81,6 +81,7 @@
   <header class="topo">
     <img src="logo.png" alt="Projeto Finito">
     <div class="direita">
+      <a class="btn" id="lk-pacientes" href="pacientes.html" hidden>Pacientes</a>
       <a class="btn" id="lk-paciente" href="cadastrar-paciente.html" hidden>Cadastrar paciente</a>
       <a class="btn" id="lk-acesso" href="cadastrar-profissional.html" hidden>Cadastrar novo acesso</a>
       <a class="btn" id="lk-ajustes" href="ajustes.html" hidden>Configurações</a>
@@ -366,6 +367,7 @@
       $('papel-txt').textContent = PAPEL[u.papel] || '';
 
       // Links por tipo de acesso: master (cadastros e configurações), profissional (agendar), ESF (nenhum)
+      $('lk-pacientes').hidden = false;
       $('lk-paciente').hidden = !(u.papel === 'master' || (u.papel === 'prestador' && u.area === 'Enfermagem'));
       $('lk-acesso').hidden = u.papel !== 'master';
       $('lk-ajustes').hidden = u.papel !== 'master';
