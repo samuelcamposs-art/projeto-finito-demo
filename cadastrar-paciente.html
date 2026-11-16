@@ -149,7 +149,7 @@
       $('comorbidades').appendChild(div);
     }
 
-    const TIPO_TXT = { proprio: 'Próprio', familiar: 'Familiar', cuidador: 'Cuidador' };
+    const TIPO_TXT = { proprio: 'Próprio', familiar: 'Familiar', cuidador: 'Cuidador (ILPI, amigos e cuidadores)' };
 
     function novoContato() {
       const div = document.createElement('div');
@@ -194,9 +194,10 @@
     (async () => {
       const { data: { session } } = await sb.auth.getSession();
       if (!session) { location.href = 'index.html'; return; }
-      const { data: u } = await sb.from('usuarios').select('id,nome,papel,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
+      const { data: u } = await sb.from('usuarios').select('id,nome,papel,area,cidade_id').eq('auth_uid', session.user.id).maybeSingle();
       if (!u) { await sb.auth.signOut(); location.href = 'index.html'; return; }
-      if (u.papel !== 'master') { location.href = 'dashboard.html'; return; }
+      const podeCadastrar = u.papel === 'master' || (u.papel === 'prestador' && u.area === 'Enfermagem');
+      if (!podeCadastrar) { location.href = 'dashboard.html'; return; }
       eu = u;
       $('nome').textContent = eu.nome;
 
@@ -261,8 +262,8 @@
 
         const nomeCompleto = `${$('nome-pac').value.trim()} ${$('sobrenome').value.trim()}`;
 
-        const { data: ult } = await sb.from('pacientes').select('numero').order('numero', { ascending: false }).limit(1);
-        const numero = (ult && ult[0] ? ult[0].numero : 0) + 1;
+        const { data: numero, error: eNum } = await sb.rpc('proximo_numero_paciente');
+        if (eNum) throw new Error('Não foi possível gerar o número do paciente: ' + eNum.message);
 
         const { data: pac, error: e1 } = await sb.from('pacientes').insert({
           cidade_id: eu.cidade_id, numero, nome: nomeCompleto,

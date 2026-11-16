@@ -366,7 +366,7 @@
       $('papel-txt').textContent = PAPEL[u.papel] || '';
 
       // Links por tipo de acesso: master (cadastros e configurações), profissional (agendar), ESF (nenhum)
-      $('lk-paciente').hidden = u.papel !== 'master';
+      $('lk-paciente').hidden = !(u.papel === 'master' || (u.papel === 'prestador' && u.area === 'Enfermagem'));
       $('lk-acesso').hidden = u.papel !== 'master';
       $('lk-ajustes').hidden = u.papel !== 'master';
       $('lk-agendar').hidden = u.papel !== 'prestador';
