@@ -392,8 +392,8 @@
       $('f-esf').innerHTML = '<option value="">Todas</option>' + sedes.map((n) => `<option value="${n}">Nº ${n}</option>`).join('');
       desenharTopo();
 
-      const d = new Date(); d.setDate(d.getDate() - 365);
-      $('f-ini').value = new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      // Período padrão: do primeiro dia do mês atual até hoje
+      $('f-ini').value = HOJE.slice(0, 8) + '01';
       $('f-fim').value = HOJE;
       await carregar();
     })();
