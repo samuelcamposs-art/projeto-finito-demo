@@ -62,6 +62,8 @@
     .contato .campos input, .contato .campos select { margin-top:4px; }
     .contato .campos .c-nome-box, .contato .campos .c-par-box { grid-column:1 / -1; }
     .btn-mais { background:transparent; border:1px solid var(--verde); color:var(--verde); border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:600; margin-bottom:8px; }
+    .linha { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    .linha select, .linha input { flex:1; margin-top:0; }
     .btn-rem { background:transparent; border:0; color:#9a3a4a; cursor:pointer; font-size:.85rem; text-decoration:underline; }
   </style>
 </head>
@@ -154,7 +156,12 @@
       <button type="button" class="btn-mais" id="e-add-contato">+ Adicionar contato</button>
 
       <p class="sub"><strong>Comorbidades</strong></p>
-      <div id="e-coms"></div>
+      <div id="e-comorbidades"></div>
+      <button type="button" class="btn-mais" id="e-add-com">+ Adicionar comorbidade</button>
+
+      <p class="sub"><strong>Áreas de saúde</strong></p>
+      <p class="ajuda">Marque as áreas que atendem este paciente. Os profissionais ativos de cada área ficam vinculados.</p>
+      <div id="e-areas"></div>
 
       <p class="sub"><strong>Situação</strong></p>
       <div class="duplo">
@@ -198,7 +205,8 @@
       ? `<table><tr><th>Data</th><th>Profissional</th><th>Evolução</th></tr>${linhas.map((l) => `<tr><td>${esc(l[0])}</td><td>${esc(l[1])}</td><td><button data-visita="${esc(l[2])}" title="Ver evolução" aria-label="Ver evolução" style="padding:4px;border:1px solid #cfc9c5;border-radius:6px;background:#fff;color:var(--roxo);cursor:pointer;line-height:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg></button></td></tr>`).join('')}</table>`
       : '<p class="vazio">Nenhum registro.</p>';
 
-    let me = null, P = null, S = null, COMS_LISTA = [], COMS_PAC = [], DES = [], VIS = [], USU = new Map(), FUTURAS = [];
+    let me = null, P = null, S = null, COMS_LISTA = [], COMS_PAC = [], DES = [], VIS = [], USU = new Map(), FUTURAS = [], AREAS = [];
+    const OUTRA_COM = '__outra__';
 
     function aviso(msg) { $('aviso-erro').textContent = msg; $('aviso-erro').hidden = false; }
 
@@ -217,15 +225,17 @@
       if (!p || p.excluido_em) { aviso('Paciente não encontrado ou você não tem acesso a ele.'); return false; }
       P = p;
 
-      const [s, c, cl, d, us, vis, ag] = await Promise.all([
+      const [s, c, cl, d, us, vis, ag, ar] = await Promise.all([
         sb.from('pacientes_sensiveis').select('*').eq('paciente_id', id).maybeSingle(),
         sb.from('paciente_comorbidades').select('principal,comorbidade_id,comorbidades(nome)').eq('paciente_id', id).is('excluido_em', null),
         sb.from('comorbidades').select('id,nome').order('nome'),
         sb.from('designacoes').select('ativa,usuario_id,usuarios(nome,area)').eq('paciente_id', id),
-        sb.from('usuarios').select('id,nome,area'),
+        sb.from('usuarios').select('id,nome,area,papel,ativo'),
         sb.from('visitas').select('id,data_visita,situacao,prestador_id,observacao,excluido_em').eq('paciente_id', id),
         sb.from('agenda_designada').select('data_visita,situacao,prestador_id').eq('paciente_id', id),
+        sb.from('areas_atuacao').select('nome').is('excluido_em', null).order('nome'),
       ]);
+      AREAS = (ar.data || []).map((x) => x.nome);
       S = s.data;
       COMS_PAC = c.data || [];
       COMS_LISTA = cl.data || [];
@@ -412,9 +422,11 @@
       $('e-contatos').innerHTML = '';
       const lista = S?.contatos_adicionais || [];
       if (lista.length) lista.forEach((c) => linhaContato(c)); else linhaContato();
-      const ativas = new Set(COMS_PAC.map((x) => x.comorbidade_id));
-      $('e-coms').innerHTML = COMS_LISTA.map((c) =>
-        `<label class="comchk"><input type="checkbox" class="com-chk" value="${c.id}" ${ativas.has(c.id) ? 'checked' : ''}> ${esc(c.nome)}</label>`).join('');
+      $('e-comorbidades').innerHTML = '';
+      if (COMS_PAC.length) COMS_PAC.forEach((x) => linhaComorb(x.comorbidade_id)); else linhaComorb();
+      const atuaisAreas = areasAtuais();
+      $('e-areas').innerHTML = AREAS.map((a) =>
+        `<label class="comchk"><input type="checkbox" class="area-chk" value="${esc(a)}" ${atuaisAreas.has(a) ? 'checked' : ''}> ${esc(a)}</label>`).join('') || '<p class="vazio">Nenhuma área cadastrada.</p>';
       $('e-int').value = P.data_interrupcao || '';
       $('e-motivo').value = P.motivo_interrupcao || '';
       $('e-obito').value = P.data_obito || '';
@@ -423,7 +435,51 @@
       $('editar').showModal();
     }
 
+    function opcoesComorb() {
+      return '<option value="">Selecione</option>' +
+        COMS_LISTA.map((c) => `<option value="${c.id}">${esc(c.nome)}</option>`).join('') +
+        `<option value="${OUTRA_COM}">Outra (escrever nova)</option>`;
+    }
+
+    function linhaComorb(valor = '') {
+      const div = document.createElement('div');
+      div.className = 'linha';
+      div.innerHTML = `<select class="e-com-sel">${opcoesComorb()}</select>
+        <input class="e-com-outra" placeholder="Nome da nova comorbidade" hidden>
+        <button type="button" class="btn-rem">Remover</button>`;
+      const sel = div.querySelector('.e-com-sel');
+      const txt = div.querySelector('.e-com-outra');
+      sel.value = valor;
+      sel.addEventListener('change', () => { txt.hidden = sel.value !== OUTRA_COM; });
+      div.querySelector('.btn-rem').addEventListener('click', () => {
+        if (document.querySelectorAll('.e-com-sel').length > 1) div.remove(); else sel.value = '';
+      });
+      $('e-comorbidades').appendChild(div);
+    }
+
+    async function resolverComorb(sel, txt) {
+      if (sel.value !== OUTRA_COM) return sel.value;
+      const nome = txt.value.trim();
+      if (!nome) throw new Error('Escreva o nome da comorbidade nova.');
+      const existente = COMS_LISTA.find((c) => c.nome.toLowerCase() === nome.toLowerCase());
+      if (existente) return existente.id;
+      const { data, error } = await sb.from('comorbidades').insert({ cidade_id: P.cidade_id, nome }).select('id,nome').single();
+      if (error) throw new Error('Não foi possível criar a comorbidade: ' + error.message);
+      COMS_LISTA.push(data);
+      return data.id;
+    }
+
+    // Áreas com pelo menos um profissional designado ao paciente
+    function areasAtuais() {
+      return new Set(DES.map((x) => x.usuarios?.area).filter(Boolean));
+    }
+
+    function profissionaisDaArea(area) {
+      return [...USU.values()].filter((x) => x.papel === 'prestador' && x.ativo && x.area === area).map((x) => x.id);
+    }
+
     $('btn-editar').addEventListener('click', abrirEditor);
+    $('e-add-com').addEventListener('click', () => linhaComorb());
     $('e-cancelar').addEventListener('click', () => $('editar').close());
     $('e-add-contato').addEventListener('click', () => linhaContato());
 
@@ -434,6 +490,14 @@
       if (motivo && !dInt) { m.textContent = 'Informe a data da interrupção para registrar o motivo.'; return; }
       const contatos = lerContatos();
       if (!contatos) return;
+      let selecionadas = new Set();
+      try {
+        for (const linha of document.querySelectorAll('#e-comorbidades .linha')) {
+          const id = await resolverComorb(linha.querySelector('.e-com-sel'), linha.querySelector('.e-com-outra'));
+          if (id) selecionadas.add(id);
+        }
+      } catch (err) { m.textContent = err.message; return; }
+      if (!selecionadas.size) { m.textContent = 'Informe pelo menos uma comorbidade.'; return; }
       m.textContent = 'Salvando...';
       try {
         const { error: e1 } = await sb.from('pacientes').update({
@@ -453,10 +517,9 @@
         if (e2) throw new Error('Dados pessoais: ' + e2.message);
 
         // Comorbidades: remove (exclusão lógica) as desmarcadas e inclui as novas
-        const marcadas = new Set([...document.querySelectorAll('.com-chk:checked')].map((c) => c.value));
         const ativas = new Set(COMS_PAC.map((x) => x.comorbidade_id));
-        const remover = [...ativas].filter((id) => !marcadas.has(id));
-        const incluir = [...marcadas].filter((id) => !ativas.has(id));
+        const remover = [...ativas].filter((id) => !selecionadas.has(id));
+        const incluir = [...selecionadas].filter((id) => !ativas.has(id));
         if (remover.length) {
           const { error: e3 } = await sb.from('paciente_comorbidades').update({ excluido_em: new Date().toISOString() })
             .eq('paciente_id', P.id).in('comorbidade_id', remover).is('excluido_em', null);
@@ -464,8 +527,29 @@
         }
         if (incluir.length) {
           const { error: e4 } = await sb.from('paciente_comorbidades').insert(
-            incluir.map((id) => ({ cidade_id: me.cidade_id, paciente_id: P.id, comorbidade_id: id, principal: false })));
+            incluir.map((id) => ({ cidade_id: P.cidade_id, paciente_id: P.id, comorbidade_id: id, principal: false })));
           if (e4) throw new Error('Comorbidades: ' + e4.message);
+        }
+
+        // Áreas de saúde: marcar designa os profissionais ativos da área; desmarcar retira essas designações
+        const marcadasAreas = new Set([...document.querySelectorAll('.area-chk:checked')].map((c) => c.value));
+        const atuaisAreas = areasAtuais();
+        for (const area of marcadasAreas) {
+          if (atuaisAreas.has(area)) continue;
+          const ids = profissionaisDaArea(area);
+          if (!ids.length) throw new Error(`Não há profissional ativo na área ${area}.`);
+          const { error: e5 } = await sb.from('designacoes').insert(
+            ids.map((uid) => ({ cidade_id: P.cidade_id, paciente_id: P.id, usuario_id: uid })));
+          if (e5) throw new Error('Áreas: ' + e5.message);
+        }
+        for (const area of atuaisAreas) {
+          if (marcadasAreas.has(area)) continue;
+          const ids = profissionaisDaArea(area);
+          if (!ids.length) continue;
+          const { error: e6 } = await sb.from('designacoes')
+            .update({ ativa: false, retirada_em: new Date().toISOString() })
+            .eq('paciente_id', P.id).in('usuario_id', ids).eq('ativa', true);
+          if (e6) throw new Error('Áreas: ' + e6.message);
         }
         location.reload();
       } catch (err) { m.textContent = err.message; }
