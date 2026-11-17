@@ -392,9 +392,11 @@
       $('f-esf').innerHTML = '<option value="">Todas</option>' + sedes.map((n) => `<option value="${n}">Nº ${n}</option>`).join('');
       desenharTopo();
 
-      // Período padrão: do primeiro dia do mês atual até hoje
-      $('f-ini').value = HOJE.slice(0, 8) + '01';
-      $('f-fim').value = HOJE;
+      // Período padrão: mês atual inteiro (primeiro ao último dia)
+      const agora = new Date(), ano = agora.getFullYear(), mes = agora.getMonth();
+      const ymd = (x) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
+      $('f-ini').value = ymd(new Date(ano, mes, 1));
+      $('f-fim').value = ymd(new Date(ano, mes + 1, 0));
       await carregar();
     })();
   </script>
