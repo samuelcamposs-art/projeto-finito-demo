@@ -206,7 +206,7 @@
       ? `<table><tr><th>Data</th><th>Profissional</th><th>Evolução</th></tr>${linhas.map((l) => `<tr><td>${esc(l[0])}</td><td>${esc(l[1])}</td><td><button data-visita="${esc(l[2])}" title="Ver evolução" aria-label="Ver evolução" style="padding:4px;border:1px solid #cfc9c5;border-radius:6px;background:#fff;color:var(--roxo);cursor:pointer;line-height:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg></button></td></tr>`).join('')}</table>`
       : '<p class="vazio">Nenhum registro.</p>';
 
-    let me = null, P = null, S = null, COMS_LISTA = [], COMS_PAC = [], DES = [], VIS = [], USU = new Map(), FUTURAS = [], AREAS = [];
+    let me = null, P = null, S = null, COMS_LISTA = [], COMS_PAC = [], DES = [], VIS = [], USU = new Map(), FUTURAS = [], AREAS = [], INTERR = [];
     const OUTRA_COM = '__outra__';
 
     function aviso(msg) { $('aviso-erro').textContent = msg; $('aviso-erro').hidden = false; }
@@ -226,7 +226,7 @@
       if (!p || p.excluido_em) { aviso('Paciente não encontrado ou você não tem acesso a ele.'); return false; }
       P = p;
 
-      const [s, c, cl, d, us, vis, ag, ar] = await Promise.all([
+      const [s, c, cl, d, us, vis, ag, ar, ih] = await Promise.all([
         sb.from('pacientes_sensiveis').select('*').eq('paciente_id', id).maybeSingle(),
         sb.from('paciente_comorbidades').select('principal,comorbidade_id,comorbidades(nome)').eq('paciente_id', id).is('excluido_em', null),
         sb.from('comorbidades').select('id,nome').order('nome'),
@@ -235,7 +235,9 @@
         sb.from('visitas').select('id,data_visita,situacao,prestador_id,observacao,excluido_em').eq('paciente_id', id),
         sb.from('agenda_designada').select('data_visita,situacao,prestador_id').eq('paciente_id', id),
         sb.from('areas_atuacao').select('nome').is('excluido_em', null).order('nome'),
+        sb.from('pacientes_interrupcoes').select('data_interrupcao,motivo,reativada_em').eq('paciente_id', id).order('data_interrupcao', { ascending: false }),
       ]);
+      INTERR = ih.data || [];
       AREAS = (ar.data || []).map((x) => x.nome);
       S = s.data;
       COMS_PAC = c.data || [];
@@ -294,7 +296,7 @@
         if (!porArea.has(area)) porArea.set(area, []);
         porArea.get(area).push([fmt(x.data_visita), USU.get(x.prestador_id)?.nome || '—', x.id]);
       }
-      $('clinico-corpo').innerHTML = comorbidadesHtml() +
+      $('clinico-corpo').innerHTML = comorbidadesHtml() + historicoInterrupcoesHtml() +
         '<p class="area-titulo">Visitas realizadas por área</p>' +
         (porArea.size
           ? [...porArea.entries()].map(([area, linhas]) =>
@@ -403,6 +405,14 @@
       }
       if (!out.length) { $('e-msg').textContent = 'Cadastre pelo menos um contato.'; return null; }
       return out;
+    }
+
+    // Histórico de interrupções: visível apenas ao master
+    function historicoInterrupcoesHtml() {
+      if (me.papel !== 'master' || !INTERR.length) return '';
+      return '<p class="area-titulo">Histórico de interrupções</p><ul class="lista">' +
+        INTERR.map((x) => `<li>Interrompido em ${fmt(x.data_interrupcao)}${x.motivo ? ' · ' + esc(x.motivo) : ''} · ` +
+          (x.reativada_em ? `reativado em ${fmt(x.reativada_em)}` : 'em aberto') + '</li>').join('') + '</ul>';
     }
 
     function comorbidadesHtml() {
