@@ -88,6 +88,7 @@
           <button class="btn" id="btn-clinico">Dados clínicos</button>
           <button class="btn btn-sec" id="btn-ficha">Imprimir ficha (PDF)</button>
           <button class="btn" id="btn-editar" hidden>Editar perfil</button>
+          <button class="btn" id="btn-reativar" hidden>Reativar atendimento</button>
         </div>
       </div>
 
@@ -254,6 +255,7 @@
       $('titulo').textContent = P.nome;
       const ehMaster = me.papel === 'master';
       $('btn-editar').hidden = !ehMaster;
+      $('btn-reativar').hidden = !(ehMaster && P.data_interrupcao);
 
       // Identificação: Bairro, Endereço, ESF (sem número de cadastro)
       $('ident').innerHTML = kv([
@@ -479,6 +481,17 @@
     }
 
     $('btn-editar').addEventListener('click', abrirEditor);
+
+    // Reativa o atendimento de paciente interrompido: limpa a data e o motivo da interrupção.
+    // O status volta a ser calculado pelo banco (ativo se houver visita agendada ou concluída).
+    $('btn-reativar').addEventListener('click', async () => {
+      if (!confirm(`Reativar o atendimento de ${P.nome}? A data e o motivo da interrupção serão apagados.`)) return;
+      const { error } = await sb.from('pacientes')
+        .update({ data_interrupcao: null, motivo_interrupcao: null })
+        .eq('id', P.id);
+      if (error) { alert('Não foi possível reativar: ' + error.message); return; }
+      location.reload();
+    });
     $('e-add-com').addEventListener('click', () => linhaComorb());
     $('e-cancelar').addEventListener('click', () => $('editar').close());
     $('e-add-contato').addEventListener('click', () => linhaContato());
